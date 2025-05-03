@@ -5,7 +5,7 @@ import { PollModel } from "@/lib/db/models/poll";
 const secret = new TextEncoder().encode(process.env.JWT_SECRET);
 const issuer = process.env.JWT_ISSUER || "cert-vote";
 
-type Payload ext= {
+type Payload = {
   pollId: string;
 };
 
