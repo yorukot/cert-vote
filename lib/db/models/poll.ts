@@ -5,6 +5,7 @@ export interface PollModel {
   title: string;
   description: string;
   status: "ongoing" | "completed" | "upcoming";
+  allowedNationalIds: string[];
 }
 
 export default class Poll implements PollModel {
@@ -17,28 +18,29 @@ export default class Poll implements PollModel {
     public title: string,
     public description: string,
     public status: "ongoing" | "completed" | "upcoming",
+    public allowedNationalIds: string[] = [],
   ) {
     this.collection = this.database.collection<Poll>(Poll.collection_name);
   }
 
-  static async create(database: Db, title: string, description: string, status: "ongoing" | "completed" | "upcoming"): Promise<Poll> {
+  static async create(database: Db, title: string, description: string, status: "ongoing" | "completed" | "upcoming", allowedNationalIds: string[] = []): Promise<Poll> {
     const pollId = crypto.randomUUID();
 
-    return new Poll(database, pollId, title, description, status);
+    return new Poll(database, pollId, title, description, status, allowedNationalIds);
   }
 
-  static async find(database: Db, filter: Filter<Poll>, options?: FindOptions & Abortable): Promise<Poll[]> {
-    const cursor = database.collection<Poll>(Poll.collection_name).find(filter, options);
+  static async find(database: Db, filter: Filter<PollModel>, options?: FindOptions & Abortable): Promise<Poll[]> {
+    const cursor = database.collection<PollModel>(Poll.collection_name).find(filter, options);
 
     const docs = await cursor.toArray();
-    return docs.map((doc) => new Poll(database, doc.pollId, doc.title, doc.description, doc.status));
+    return docs.map((doc) => new Poll(database, doc.pollId, doc.title, doc.description, doc.status, doc.allowedNationalIds || []));
   }
 
-  static async findOne(database: Db, filter: Filter<Poll>, options?: FindOptions & Abortable): Promise<Poll | null> {
-    const doc = await database.collection<Poll>(Poll.collection_name).findOne(filter, options);
+  static async findOne(database: Db, filter: Filter<PollModel>, options?: FindOptions & Abortable): Promise<Poll | null> {
+    const doc = await database.collection<PollModel>(Poll.collection_name).findOne(filter, options);
     if (!doc) return null;
 
-    const poll = new Poll(database, doc.pollId, doc.title, doc.description, doc.status);
+    const poll = new Poll(database, doc.pollId, doc.title, doc.description, doc.status, doc.allowedNationalIds || []);
 
     return poll;
   }
@@ -58,7 +60,7 @@ export default class Poll implements PollModel {
   }
 
   static fromJson(database: Db, json: PollModel): Poll {
-    return new Poll(database, json.pollId, json.title, json.description, json.status);
+    return new Poll(database, json.pollId, json.title, json.description, json.status, json.allowedNationalIds || []);
   }
 
   toJson(): PollModel {
@@ -67,6 +69,7 @@ export default class Poll implements PollModel {
       title: this.title,
       description: this.description,
       status: this.status,
+      allowedNationalIds: this.allowedNationalIds,
     };
   }
 }

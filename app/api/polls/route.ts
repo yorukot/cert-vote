@@ -1,4 +1,3 @@
-// app/api/polls/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import Poll, { PollModel } from "@/lib/db/models/poll";
 import { database } from "@/lib/db/mongodb";
@@ -33,5 +32,5 @@ export async function GET(request: NextRequest) {
     limit: limit || 0,
   });
 
-  return NextResponse.json(polls);
+  return NextResponse.json(polls.map((poll) => poll.toJson()));
 }
