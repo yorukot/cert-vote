@@ -69,7 +69,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   // Verify the signature using subtle crypto, with voteKey.userPublicKey
   const encoder = new TextEncoder();
-  const data = encoder.encode(voteKey.voteRandomId + body.selectedOption);
+  const data = encoder.encode(pollId + voteKey.voteRandomId + body.selectedOption);
   const signature = encoder.encode(body.userSignature);
   const publicKey = await subtle.importKey("pkcs8", encoder.encode(voteKey.userPublicKey), "Ed25519", false, ["verify"]);
 
