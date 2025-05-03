@@ -21,11 +21,11 @@ export async function issueJwt(user: UserModel, poll: PollModel) {
   return jwt;
 }
 
-export async function verifyJwt(token: string, user: UserModel): Promise<VerificationPayload> {
+export async function verifyJwt(token: string, userId: string): Promise<VerificationPayload> {
   try {
     const { payload, protectedHeader } = await jwtVerify<VerificationPayload>(token, secret, {
       issuer: issuer,
-      audience: user.userId,
+      audience: userId,
     });
 
     return payload;
