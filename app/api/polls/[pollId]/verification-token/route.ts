@@ -2,7 +2,6 @@ import { NextRequest } from "next/server";
 import Poll from "@/lib/db/models/poll";
 import { database } from "@/lib/db/mongodb";
 import { issueJwt } from "@/lib/jwt";
-import User from "@/lib/db/models/user";
 
 interface CreateVerificationTokenBody {
   nationalId: string;
