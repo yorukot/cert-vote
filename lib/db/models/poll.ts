@@ -7,7 +7,6 @@ export interface PollModel {
   creator: string;
   endTime: Date;
   startTime: Date;
-  status: "ongoing" | "completed" | "upcoming";
   allowedNationalIds: string[];
 }
 
@@ -23,7 +22,6 @@ export default class Poll implements PollModel {
     public creator: string,
     public startTime: Date,
     public endTime: Date,
-    public status: "ongoing" | "completed" | "upcoming",
     public allowedNationalIds: string[] = [],
   ) {
     this.collection = this.database.collection<Poll>(Poll.collection_name);
@@ -36,7 +34,6 @@ export default class Poll implements PollModel {
     creator: string,
     startTime: Date,
     endTime: Date,
-    status: "ongoing" | "completed" | "upcoming", 
     allowedNationalIds: string[] = []
   ): Promise<Poll> {
     const pollId = crypto.randomUUID();
@@ -49,7 +46,6 @@ export default class Poll implements PollModel {
       creator,
       startTime,
       endTime,
-      status, 
       allowedNationalIds
     );
   }
@@ -91,7 +87,6 @@ export default class Poll implements PollModel {
       json.creator,
       json.startTime,
       json.endTime,
-      json.status, 
       json.allowedNationalIds || []
     );
   }
@@ -104,7 +99,6 @@ export default class Poll implements PollModel {
       creator: this.creator,
       startTime: this.startTime,
       endTime: this.endTime,
-      status: this.status,
       allowedNationalIds: this.allowedNationalIds,
     };
   }

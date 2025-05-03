@@ -3,10 +3,6 @@ import Poll, { PollModel } from "@/lib/db/models/poll";
 import { database } from "@/lib/db/mongodb";
 import type { Filter } from "mongodb";
 
-function isStatus(s: string): s is PollModel["status"] {
-  return ["ongoing", "completed", "upcoming"].includes(s);
-}
-
 function isValidDate(s: string): boolean {
   return !isNaN(Date.parse(s));
 }
@@ -19,18 +15,10 @@ export async function GET(request: NextRequest) {
   const filters: Filter<PollModel> = {};
 
   // Basic string filters
-  for (const key of ["status", "pollId", "title", "description", "creator"] as const) {
+  for (const key of ["pollId", "title", "description", "creator"] as const) {
     const val = searchParams.get(key);
     if (val === null) continue;
-
-    if (key === "status") {
-      if (!isStatus(val)) {
-        return NextResponse.json({ error: `Invalid status value: ${val}` }, { status: 400 });
-      }
-      filters.status = val;
-    } else {
-      filters[key] = val;
-    }
+    filters[key] = val;
   }
 
   // Date filters
@@ -49,7 +37,6 @@ export async function GET(request: NextRequest) {
     }
     
     if (filters.startTime) {
-      // If startTimeAfter is also set, use $gte and $lte together
       filters.startTime = { 
         ...filters.startTime, 
         $lte: new Date(startTimeBefore) 
@@ -74,7 +61,6 @@ export async function GET(request: NextRequest) {
     }
     
     if (filters.endTime) {
-      // If endTimeAfter is also set, use $gte and $lte together
       filters.endTime = { 
         ...filters.endTime, 
         $lte: new Date(endTimeBefore) 
@@ -135,12 +121,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "End time must be after start time" }, { status: 400 });
     }
     
-    // Validate status
-    const status = body.status || "upcoming";
-    if (!isStatus(status)) {
-      return NextResponse.json({ error: "Invalid status value" }, { status: 400 });
-    }
-    
     // Validate allowedNationalIds
     const allowedNationalIds = body.allowedNationalIds || [];
     if (!Array.isArray(allowedNationalIds)) {
@@ -155,7 +135,6 @@ export async function POST(request: NextRequest) {
       body.creator,
       startTime,
       endTime,
-      status,
       allowedNationalIds
     );
     

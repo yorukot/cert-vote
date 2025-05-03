@@ -49,13 +49,6 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       existingPoll.endTime = endTime;
     }
     
-    if (body.status) {
-      if (!["ongoing", "completed", "upcoming"].includes(body.status)) {
-        return Response.json({ error: "Invalid status value" }, { status: 400 });
-      }
-      existingPoll.status = body.status;
-    }
-    
     if (body.allowedNationalIds) {
       if (!Array.isArray(body.allowedNationalIds)) {
         return Response.json({ error: "allowedNationalIds must be an array" }, { status: 400 });

@@ -11,6 +11,15 @@ import { PollModel } from "@/lib/db/models/poll";
 import dayjs from "dayjs";
 import Fuse from "fuse.js";
 
+function getPollStatus(start: string | Date, end: string | Date): "upcoming" | "ongoing" | "completed" {
+  const now = dayjs();
+  const startTime = dayjs(start);
+  const endTime = dayjs(end);
+  if (now.isBefore(startTime)) return "upcoming";
+  if (now.isAfter(endTime)) return "completed";
+  return "ongoing";
+}
+
 export default function Home() {
   const { data, error, isLoading } = useSWR("/api/polls", fetcher);
   const [searchValue, setSearchValue] = useState("");
@@ -43,13 +52,13 @@ export default function Home() {
             <PollCard
               key={i.pollId}
               title={i.title}
-                startDate={dayjs(i.startTime).unix()}
-                endDate={dayjs(i.endTime).unix()}
+              startDate={dayjs(i.startTime).unix().toString()}
+              endDate={dayjs(i.endTime).unix().toString()}
               description={i.description}
               creator={i.creator}
               voteCount={0}
               totalPossibleVotes={0}
-              status={i.status}
+              status={getPollStatus(i.startTime, i.endTime)}
             />
           ))
         )}

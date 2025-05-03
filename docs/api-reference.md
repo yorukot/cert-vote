@@ -27,7 +27,6 @@ GET /api/polls
 | Parameter       | Type   | Description                                       |
 |-----------------|--------|---------------------------------------------------|
 | limit           | number | Maximum number of polls to return                 |
-| status          | string | Filter by poll status (ongoing, completed, upcoming) |
 | pollId          | string | Filter by poll ID                                 |
 | title           | string | Filter by poll title                              |
 | description     | string | Filter by poll description                        |
@@ -48,7 +47,6 @@ GET /api/polls
     "creator": "string",
     "startTime": "2023-01-01T00:00:00.000Z",
     "endTime": "2023-01-01T00:00:00.000Z",
-    "status": "ongoing | completed | upcoming",
     "allowedNationalIds": ["string"]
   }
 ]
@@ -79,7 +77,6 @@ POST /api/polls
   "creator": "string",
   "startTime": "2023-01-01T00:00:00.000Z",
   "endTime": "2023-01-01T00:00:00.000Z",
-  "status": "ongoing | completed | upcoming",
   "allowedNationalIds": ["string"]
 }
 ```
@@ -94,7 +91,6 @@ POST /api/polls
   "creator": "string",
   "startTime": "2023-01-01T00:00:00.000Z",
   "endTime": "2023-01-01T00:00:00.000Z",
-  "status": "ongoing | completed | upcoming",
   "allowedNationalIds": ["string"]
 }
 ```
@@ -106,7 +102,6 @@ POST /api/polls
 | 400         | Missing required fields       | `{ "error": "Title is required" }`            |
 | 400         | Invalid date format           | `{ "error": "Invalid startTime format" }`     |
 | 400         | End time before start time    | `{ "error": "End time must be after start time" }` |
-| 400         | Invalid status                | `{ "error": "Invalid status value" }`         |
 | 400         | Invalid allowed national IDs  | `{ "error": "allowedNationalIds must be an array" }` |
 
 ---
@@ -135,7 +130,6 @@ GET /api/polls/{pollId}
   "creator": "string",
   "startTime": "2023-01-01T00:00:00.000Z",
   "endTime": "2023-01-01T00:00:00.000Z",
-  "status": "ongoing | completed | upcoming",
   "allowedNationalIds": ["string"]
 }
 ```
@@ -171,7 +165,6 @@ PUT /api/polls/{pollId}
   "creator": "string",
   "startTime": "2023-01-01T00:00:00.000Z",
   "endTime": "2023-01-01T00:00:00.000Z",
-  "status": "ongoing | completed | upcoming",
   "allowedNationalIds": ["string"]
 }
 ```
@@ -188,7 +181,6 @@ Only include the fields you want to update. Fields not included will remain unch
   "creator": "string",
   "startTime": "2023-01-01T00:00:00.000Z",
   "endTime": "2023-01-01T00:00:00.000Z",
-  "status": "ongoing | completed | upcoming",
   "allowedNationalIds": ["string"]
 }
 ```
@@ -199,7 +191,6 @@ Only include the fields you want to update. Fields not included will remain unch
 |-------------|-------------------------------|-----------------------------------------------|
 | 404         | Poll not found                | `{ "error": "Poll not found" }`               |
 | 400         | Invalid date format           | `{ "error": "Invalid startTime format" }`     |
-| 400         | Invalid status                | `{ "error": "Invalid status value" }`         |
 | 400         | Invalid allowed national IDs  | `{ "error": "allowedNationalIds must be an array" }` |
 
 ---
