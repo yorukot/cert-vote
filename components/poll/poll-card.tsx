@@ -37,22 +37,18 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
   const [error, setError] = useState<string | null>(null);
   const [generatingKey, setGeneratingKey] = useState(false);
   const [keyGenError, setKeyGenError] = useState<string | null>(null);
-  
+
   // Function to submit the final vote using the generated key
   const submitVote = async (randomId: string, privateKey: CryptoKey, option: string) => {
     try {
       // Create signature for the vote
       const encoder = new TextEncoder();
       const data = encoder.encode(randomId + option);
-      const signature = await window.crypto.subtle.sign(
-        { name: "ECDSA", hash: { name: "SHA-256" } },
-        privateKey,
-        data
-      );
-      
+      const signature = await window.crypto.subtle.sign({ name: "ECDSA", hash: { name: "SHA-256" } }, privateKey, data);
+
       // Convert signature to Base64
       const signatureBase64 = btoa(String.fromCharCode(...new Uint8Array(signature)));
-      
+
       // Submit the vote
       const voteRes = await fetch(`/api/polls/${pollId}/vote-blocks`, {
         method: "POST",
@@ -60,15 +56,15 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
         body: JSON.stringify({
           voteRandomId: randomId,
           selectedOption: option,
-          userSignature: signatureBase64
-        })
+          userSignature: signatureBase64,
+        }),
       });
-      
+
       if (!voteRes.ok) {
         const errData = await voteRes.json();
         throw new Error(errData.error || "Failed to submit vote");
       }
-      
+
       // Update success state
       setSuccess(true);
     } catch (err: any) {
@@ -123,13 +119,9 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
         setSuccess(true);
         setGeneratingKey(true);
         // Generate Ed25519 key pair and UUID, send to backend
-        (async () => {
+        (() => {
           try {
-            const keyPair = await window.crypto.subtle.generateKey(
-              { name: "ECDSA", namedCurve: "P-256" },
-              true, 
-              ["sign", "verify"]
-            );
+            const keyPair = await window.crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"]);
             const publicKeyBuffer = await window.crypto.subtle.exportKey("raw", keyPair.publicKey);
             const publicKeyBase64 = btoa(String.fromCharCode(...new Uint8Array(publicKeyBuffer)));
             const randomId = uuidv4();
@@ -151,15 +143,15 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
             }
             // Store necessary data for voting
             localStorage.setItem(`poll_random_id_${pollId}`, randomId);
-            
+
             // Export private key for signing
             const privateKeyBuffer = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
             const privateKeyBase64 = btoa(String.fromCharCode(...new Uint8Array(privateKeyBuffer)));
             localStorage.setItem(`poll_private_key_${pollId}`, privateKeyBase64);
-            
+
             // Now submit the actual vote
             await submitVote(randomId, keyPair.privateKey, selectedVote!);
-            
+
             setGeneratingKey(false);
             setDialogOpen(false);
             setNationalId("");
