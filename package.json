@@ -1,5 +1,5 @@
 {
-  "name": "my-app",
+  "name": "cert-vote",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -12,7 +12,11 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.507.0",
+<<<<<<< HEAD
     "motion": "^12.9.4",
+=======
+    "mongodb": "^6.16.0",
+>>>>>>> 41ef9601e774de3f974afe6d1301e9281c862a56
     "next": "15.3.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
