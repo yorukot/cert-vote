@@ -4,6 +4,9 @@ export interface PollModel {
   pollId: string;
   title: string;
   description: string;
+  creator: string;
+  endTime: Date;
+  startTime: Date;
   status: "ongoing" | "completed" | "upcoming";
   allowedNationalIds: string[];
 }
@@ -17,16 +20,38 @@ export default class Poll implements PollModel {
     public readonly pollId: string,
     public title: string,
     public description: string,
+    public creator: string,
+    public startTime: Date,
+    public endTime: Date,
     public status: "ongoing" | "completed" | "upcoming",
     public allowedNationalIds: string[] = [],
   ) {
     this.collection = this.database.collection<Poll>(Poll.collection_name);
   }
 
-  static async create(database: Db, title: string, description: string, status: "ongoing" | "completed" | "upcoming", allowedNationalIds: string[] = []): Promise<Poll> {
+  static async create(
+    database: Db, 
+    title: string, 
+    description: string, 
+    creator: string,
+    startTime: Date,
+    endTime: Date,
+    status: "ongoing" | "completed" | "upcoming", 
+    allowedNationalIds: string[] = []
+  ): Promise<Poll> {
     const pollId = crypto.randomUUID();
 
-    return new Poll(database, pollId, title, description, status, allowedNationalIds);
+    return new Poll(
+      database, 
+      pollId, 
+      title, 
+      description, 
+      creator,
+      startTime,
+      endTime,
+      status, 
+      allowedNationalIds
+    );
   }
 
   static async find(database: Db, filter: Filter<PollModel>, options?: FindOptions & Abortable): Promise<Poll[]> {
@@ -58,7 +83,17 @@ export default class Poll implements PollModel {
   }
 
   static fromJson(database: Db, json: PollModel): Poll {
-    return new Poll(database, json.pollId, json.title, json.description, json.status, json.allowedNationalIds || []);
+    return new Poll(
+      database, 
+      json.pollId, 
+      json.title, 
+      json.description, 
+      json.creator,
+      json.startTime,
+      json.endTime,
+      json.status, 
+      json.allowedNationalIds || []
+    );
   }
 
   toJson(): PollModel {
@@ -66,6 +101,9 @@ export default class Poll implements PollModel {
       pollId: this.pollId,
       title: this.title,
       description: this.description,
+      creator: this.creator,
+      startTime: this.startTime,
+      endTime: this.endTime,
       status: this.status,
       allowedNationalIds: this.allowedNationalIds,
     };
