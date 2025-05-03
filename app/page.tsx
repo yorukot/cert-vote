@@ -39,11 +39,11 @@ export default function Home() {
     <div className="w-full h-full flex flex-col items-center justify-center space-y-8">
       <div className="grid place-items-center">
         <Vote width={100} height={100} className="mb-4" />
-        <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-indigo-300 to-fuchsia-500 mb-2">CertVote</h1>
+        <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-indigo-300 to-fuchsia-500 mb-2">CertVote</h1>
         <h2 className="text-lg text-muted-foreground mb-6 text-center">Anonymous voting system with blockchain based verification system</h2>
       </div>
       <PollSearch setValue={setSearchValue} value={searchValue} />
-      <div className="flex flex-col gap-3 w-full max-w-3xl justify-center items-center">
+      <div className="flex flex-col gap-6 w-full max-w-3xl justify-center items-center">
         {isLoading ? (
           <Skeleton className="w-full h-24" />
         ) : filteredPolls.length === 0 ? (
