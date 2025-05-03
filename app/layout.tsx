@@ -28,26 +28,30 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${robotoMono.variable} antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <nav className="border-b-border border-1 w-screen">
-            <div className="mx-auto flex justify-between py-4 max-w-6xl px-2">
-              <div className="flex gap-4 place-items-center">
-                <Vote />
-                <h1 className="font-bold text-xl">CertVote</h1>
+        <div className="flex flex-col h-screen w-screen">
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <nav className="border-b-border border-1 w-screen">
+              <div className="mx-auto flex justify-between py-4 max-w-7xl px-8">
+                <div className="flex gap-4 place-items-center">
+                  <Vote />
+                  <h1 className="font-bold text-xl">CertVote</h1>
+                </div>
+                <div>
+                  <ModeToggle />
+                </div>
               </div>
-              <div>
-                <ModeToggle />
-              </div>
-            </div>
-          </nav>
+            </nav>
 
-          <main className="mx-auto max-w-6xl p-2">{children}</main>
-        </ThemeProvider>
+            <main className="mx-auto max-w-6xl p-2 h-full w-full">
+              {children}
+            </main>
+          </ThemeProvider>
+        </div>
       </body>
     </html>
   );
