@@ -35,5 +35,5 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const jwt = await issueJwt(user, poll);
 
-  return Response.json({ verificationToken: jwt });
+  return Response.json({ verificationToken: jwt, userId: user.userId });
 }
