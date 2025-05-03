@@ -6,7 +6,7 @@ import VoteKey from "@/lib/db/models/vote-key";
 
 interface CreateVoteKeyBody {
   userPublicKey: string; // The public key of the user, in pkcs8 format
-  randomId: string;
+  voteRandomId: string;
   verificationToken: string; // The verification token issued in the previous step
   userId: string;
 }
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return Response.json({ error: "User public key is required" }, { status: 400 });
   }
 
-  if (!body.randomId) {
+  if (!body.voteRandomId) {
     return Response.json({ error: "Random ID is required" }, { status: 400 });
   }
 
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
 
   // We don't have to verify if the user is allowed to vote, because we already verified it in the previous step, they won't get the jwt if they are not allowed to vote.
-  const voteKey = await VoteKey.create(database, pollId, body.userPublicKey, body.randomId);
+  const voteKey = await VoteKey.create(database, pollId, body.userPublicKey, body.voteRandomId);
   await voteKey.upsert();
 
   return Response.json({ createdVoteKey: voteKey.toJson() });
