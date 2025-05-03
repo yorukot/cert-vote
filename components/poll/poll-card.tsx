@@ -48,11 +48,25 @@ export function PollCard({
     Math.round((voteCount / totalPossibleVotes) * 100),
     100
   );
+  
+  // Format timestamp to readable date
+  const formatDate = (timestamp: string) => {
+    try {
+      const date = new Date(parseInt(timestamp) * 1000);
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    } catch (e) {
+      return timestamp;
+    }
+  };
 
   return (
     <Card
       className={cn(
-        "overflow-hidden w-full max-w-md rounded-xl border shadow-sm hover:shadow-md transition-all duration-200 relative",
+        "overflow-hidden container rounded-xl border shadow-sm hover:shadow-md transition-all duration-200 relative",
         {
           "border-primary/20": status === "ongoing",
           "border-primary/40": status === "completed",
@@ -62,7 +76,7 @@ export function PollCard({
       )}
     >
       <CardHeader
-        className="cursor-pointer pt-3 pb-2 px-4 flex flex-row justify-between items-center border-t-2 border-t-transparent"
+        className="cursor-pointer pt-3 pb-2 px-4 flex flex-row justify-between items-center"
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="flex items-center gap-3">
@@ -93,11 +107,11 @@ export function PollCard({
               <div className="flex flex-col space-y-1">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Calendar size={12} />
-                  <span>Start: {startDate}</span>
+                  <span>Start: {formatDate(startDate)}</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Calendar size={12} />
-                  <span>End: {endDate}</span>
+                  <span>End: {formatDate(endDate)}</span>
                 </div>
               </div>
 
