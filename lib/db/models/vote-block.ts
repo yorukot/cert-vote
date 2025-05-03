@@ -12,7 +12,15 @@ export interface VoteBlockModel {
   hash: string;
 }
 
-export function createBlockHash(previousBlockHash: string, pollId: string, index: number, userPublicKey: string, voteRandomId: string, selectedOption: "agree" | "disagree" | "abstain", userSignature: string): string {
+export function createBlockHash(
+  previousBlockHash: string,
+  pollId: string,
+  index: number,
+  userPublicKey: string,
+  voteRandomId: string,
+  selectedOption: "agree" | "disagree" | "abstain",
+  userSignature: string,
+): string {
   return createHash("sha256")
     .update(previousBlockHash + pollId + index + userPublicKey + voteRandomId + selectedOption + userSignature)
     .digest("hex");
@@ -39,8 +47,6 @@ export class VoteBlock implements VoteBlockModel {
   static async getLastBlock(database: Db) {
     const collection = database.collection<VoteBlockModel>(this.collection_name);
 
-    await collection.createIndex({ index: 1 }, { background: true });
-
     const cursor = await this.find(database, {}, { sort: { index: -1 }, limit: 1 });
 
     const lastBlock = cursor.at(0);
@@ -52,7 +58,15 @@ export class VoteBlock implements VoteBlockModel {
     return VoteBlock.fromJson(database, lastBlock);
   }
 
-  static async append(database: Db, pollId: string, index: number, userPublicKey: string, voteRandomId: string, selectedOption: "agree" | "disagree" | "abstain", userSignature: string): Promise<VoteBlock> {
+  static async append(
+    database: Db,
+    pollId: string,
+    index: number,
+    userPublicKey: string,
+    voteRandomId: string,
+    selectedOption: "agree" | "disagree" | "abstain",
+    userSignature: string,
+  ): Promise<VoteBlock> {
     let previousBlock = await VoteBlock.getLastBlock(database);
 
     if (!previousBlock) {
@@ -68,14 +82,21 @@ export class VoteBlock implements VoteBlockModel {
   }
 
   static async find(database: Db, filter: Filter<VoteBlockModel>, options?: FindOptions & Abortable): Promise<VoteBlock[]> {
-    const cursor = database.collection<VoteBlockModel>(VoteBlock.collection_name).find(filter, options);
+    const collection = database.collection<VoteBlockModel>(VoteBlock.collection_name);
+    const cursor = collection.find(filter, options);
+
+    await collection.createIndex({ index: 1 }, { background: true });
 
     const docs = await cursor.toArray();
     return docs.map((doc) => VoteBlock.fromJson(database, doc));
   }
 
   static async findOne(database: Db, filter: Filter<VoteBlockModel>, options?: FindOptions & Abortable): Promise<VoteBlock | null> {
-    const doc = await database.collection<VoteBlockModel>(VoteBlock.collection_name).findOne(filter, options);
+    const collection = database.collection<VoteBlockModel>(VoteBlock.collection_name);
+
+    await collection.createIndex({ index: 1 }, { background: true });
+
+    const doc = await collection.findOne(filter, options);
     if (!doc) return null;
 
     return VoteBlock.fromJson(database, doc);
