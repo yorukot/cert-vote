@@ -275,4 +275,8 @@ POST /api/polls/{pollId}/verification-token
 
 ## Authentication
 
-The authentication endpoints are not fully implemented yet. 
+The authentication endpoints are not fully implemented yet.
+
+## Postman Collection
+
+Below is a ready-to-import Postman collection for the CertVote Polls API. Copy the JSON and import it into Postman (File > Import > Raw Text > Paste JSON).
