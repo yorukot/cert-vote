@@ -50,7 +50,7 @@ export function PollCard({ title, startDate, endDate, description, imageSrc, cre
 
   return (
     <div className="w-full shadow-sm hover:shadow-md">
-      <Card className="overflow-hidden container rounded-t-xl rounded-b-none border-t border-x border-b-0 shadow-none transition-all duration-200 relative">
+      <Card className="overflow-hidden container rounded-t-xl rounded-b-none border-t border-x border-b-0 shadow-none duration-200 relative">
         <CardHeader className="cursor-pointer flex flex-row justify-between items-center" onClick={() => setIsOpen(!isOpen)}>
           <div className="flex items-center gap-3">
             <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }} className="text-muted-foreground">
@@ -138,11 +138,11 @@ export function PollCard({ title, startDate, endDate, description, imageSrc, cre
       </Card>
       <div className="w-full h-3 bg-muted border-x border-b border-primary/20 rounded-b-xl">
         <div
-          className={cn("h-full transition-all rounded-bl-xl", {
+          className={cn("h-full rounded-bl-xl", {
             "bg-secondary": status === "ongoing",
             "bg-primary": status === "completed",
             "bg-muted-foreground": status === "upcoming",
-          })}
+          }, progressPercentage >=99 ? "rounded-r-none" : "rounded-br-xl")}
           style={{ width: `${progressPercentage}%` }}
         />
       </div>
