@@ -29,8 +29,20 @@ export default function Home() {
           {isLoading ? (
             <Skeleton className="w-full h-24" />
           ) : (
-            data.map((i: PollModel[]) => {
-              return <div />;
+            data.map((i: PollModel) => {
+              return (
+                <PollCard
+                  key={i.pollId}
+                  title={i.title}
+                  startDate={i.startTime.toISOString()}
+                  endDate={i.endTime.toISOString()}
+                  description={i.description}
+                  creator={i.creator}
+                  voteCount={0}
+                  totalPossibleVotes={0}
+                  status={i.status}
+                />
+              );
             })
           )}
           <PollCard
