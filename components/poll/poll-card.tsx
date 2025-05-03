@@ -9,6 +9,8 @@ import { ChevronDown, Calendar, User, Info, Vote, Check, X, Annoyed, Frown, Smil
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../ui/dropdown-menu";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "../ui/dialog";
+import { Input } from "../ui/input";
 
 interface PollCardProps {
   title: string;
@@ -25,6 +27,10 @@ interface PollCardProps {
 
 export function PollCard({ title, startDate, endDate, description, imageSrc, creator, voteCount, totalPossibleVotes = 100, status, className }: PollCardProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedVote, setSelectedVote] = useState<string | null>(null);
+  const [nationalId, setNationalId] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const statusVariant: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
     ongoing: "secondary",
@@ -46,6 +52,23 @@ export function PollCard({ title, startDate, endDate, description, imageSrc, cre
     } catch (e) {
       return timestamp;
     }
+  };
+
+  const handleVoteClick = (vote: string) => {
+    setSelectedVote(vote);
+    setDialogOpen(true);
+  };
+
+  const handleDialogSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    // TODO: Call your vote API here with { nationalId, vote: selectedVote }
+    setTimeout(() => {
+      setSubmitting(false);
+      setDialogOpen(false);
+      setNationalId("");
+      setSelectedVote(null);
+    }, 1000);
   };
 
   return (
@@ -116,19 +139,39 @@ export function PollCard({ title, startDate, endDate, description, imageSrc, cre
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="center" className="flex flex-col gap-2">
-                        <DropdownMenuItem>
-                          <Smile size={16} /> Agree
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Annoyed size={16} /> Abstain
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Frown size={16} /> Disagree
-                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleVoteClick("agree")}> <Smile size={16} /> Agree </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleVoteClick("abstain")}> <Annoyed size={16} /> Abstain </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleVoteClick("disagree")}> <Frown size={16} /> Disagree </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
                 </div>
+                {/* Dialog for national ID input */}
+                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                  <DialogContent>
+                    <form onSubmit={handleDialogSubmit} className="space-y-4">
+                      <DialogHeader>
+                        <DialogTitle>Enter National ID</DialogTitle>
+                        <DialogDescription>
+                          To vote <span className="font-semibold">{selectedVote}</span>, please enter your national ID.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <Input
+                        placeholder="National ID"
+                        value={nationalId}
+                        onChange={e => setNationalId(e.target.value)}
+                        required
+                        autoFocus
+                        disabled={submitting}
+                      />
+                      <DialogFooter>
+                        <Button type="submit" disabled={submitting || !nationalId}>
+                          {submitting ? "Submitting..." : "Submit Vote"}
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
               </CardContent>
             </motion.div>
           )}
