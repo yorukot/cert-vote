@@ -72,8 +72,8 @@ export function PollCard({ title, startDate, endDate, description, imageSrc, cre
   };
 
   return (
-    <div className="w-full shadow-sm hover:shadow-md">
-      <Card className="overflow-hidden container rounded-t-xl rounded-b-none border-t border-x border-b-0 shadow-none duration-200 relative">
+    <div className="shadow-sm hover:shadow-md w-full">
+      <Card className="overflow-hidden w-full rounded-t-xl rounded-b-none border-t border-x border-b-0 shadow-none duration-200 relative">
         <CardHeader className="cursor-pointer flex flex-row justify-between items-center" onClick={() => setIsOpen(!isOpen)}>
           <div className="flex items-center gap-3">
             <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }} className="text-muted-foreground">
@@ -139,9 +139,18 @@ export function PollCard({ title, startDate, endDate, description, imageSrc, cre
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="center" className="flex flex-col gap-2">
-                        <DropdownMenuItem onClick={() => handleVoteClick("agree")}> <Smile size={16} /> Agree </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleVoteClick("abstain")}> <Annoyed size={16} /> Abstain </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleVoteClick("disagree")}> <Frown size={16} /> Disagree </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleVoteClick("agree")}>
+                          {" "}
+                          <Smile size={16} /> Agree{" "}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleVoteClick("abstain")}>
+                          {" "}
+                          <Annoyed size={16} /> Abstain{" "}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleVoteClick("disagree")}>
+                          {" "}
+                          <Frown size={16} /> Disagree{" "}
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -156,14 +165,7 @@ export function PollCard({ title, startDate, endDate, description, imageSrc, cre
                           To vote <span className="font-semibold">{selectedVote}</span>, please enter your national ID.
                         </DialogDescription>
                       </DialogHeader>
-                      <Input
-                        placeholder="National ID"
-                        value={nationalId}
-                        onChange={e => setNationalId(e.target.value)}
-                        required
-                        autoFocus
-                        disabled={submitting}
-                      />
+                      <Input placeholder="National ID" value={nationalId} onChange={(e) => setNationalId(e.target.value)} required autoFocus disabled={submitting} />
                       <DialogFooter>
                         <Button type="submit" disabled={submitting || !nationalId}>
                           {submitting ? "Submitting..." : "Submit Vote"}
@@ -181,11 +183,15 @@ export function PollCard({ title, startDate, endDate, description, imageSrc, cre
       </Card>
       <div className="w-full h-3 bg-muted border-x border-b border-primary/20 rounded-b-xl">
         <div
-          className={cn("h-full rounded-bl-xl", {
-            "bg-secondary": status === "ongoing",
-            "bg-primary": status === "completed",
-            "bg-muted-foreground": status === "upcoming",
-          }, progressPercentage >=99 ? "rounded-r-none" : "rounded-br-xl")}
+          className={cn(
+            "h-full rounded-bl-xl",
+            {
+              "bg-secondary": status === "ongoing",
+              "bg-primary": status === "completed",
+              "bg-muted-foreground": status === "upcoming",
+            },
+            progressPercentage >= 99 ? "rounded-r-none" : "rounded-br-xl",
+          )}
           style={{ width: `${progressPercentage}%` }}
         />
       </div>
