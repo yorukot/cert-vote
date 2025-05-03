@@ -13,6 +13,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 import { Input } from "../ui/input";
 
 interface PollCardProps {
+  pollId: string;
   title: string;
   startDate: string;
   endDate: string;
@@ -25,12 +26,14 @@ interface PollCardProps {
   className?: string;
 }
 
-export function PollCard({ title, startDate, endDate, description, imageSrc, creator, voteCount, totalPossibleVotes = 100, status, className }: PollCardProps) {
+export function PollCard({ pollId, title, startDate, endDate, description, imageSrc, creator, voteCount, totalPossibleVotes = 100, status, className }: PollCardProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedVote, setSelectedVote] = useState<string | null>(null);
   const [nationalId, setNationalId] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const statusVariant: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
     ongoing: "secondary",
@@ -62,13 +65,28 @@ export function PollCard({ title, startDate, endDate, description, imageSrc, cre
   const handleDialogSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    // TODO: Call your vote API here with { nationalId, vote: selectedVote }
-    setTimeout(() => {
-      setSubmitting(false);
+    setError(null);
+    setSuccess(false);
+    try {
+      const res = await fetch(`/api/polls/${pollId}/verification-token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nationalId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to get token");
+      if (data.verificationToken) {
+        localStorage.setItem(`poll_jwt_${pollId}`, data.verificationToken);
+        setSuccess(true);
+      }
       setDialogOpen(false);
       setNationalId("");
       setSelectedVote(null);
-    }, 1000);
+    } catch (err: any) {
+      setError(err.message || "Unknown error");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -165,7 +183,16 @@ export function PollCard({ title, startDate, endDate, description, imageSrc, cre
                           To vote <span className="font-semibold">{selectedVote}</span>, please enter your national ID.
                         </DialogDescription>
                       </DialogHeader>
-                      <Input placeholder="National ID" value={nationalId} onChange={(e) => setNationalId(e.target.value)} required autoFocus disabled={submitting} />
+                      <Input
+                        placeholder="National ID"
+                        value={nationalId}
+                        onChange={e => setNationalId(e.target.value)}
+                        required
+                        autoFocus
+                        disabled={submitting}
+                      />
+                      {error && <div className="text-destructive text-xs">{error}</div>}
+                      {success && <div className="text-green-600 text-xs">Vote token saved!</div>}
                       <DialogFooter>
                         <Button type="submit" disabled={submitting || !nationalId}>
                           {submitting ? "Submitting..." : "Submit Vote"}

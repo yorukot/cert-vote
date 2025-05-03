@@ -23,17 +23,18 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return Response.json({ error: "National ID is required" }, { status: 400 });
   }
 
-  const user = await User.findOne(database, { nationalId: body.nationalId });
+  // const user = await User.findOne(database, { nationalId: body.nationalId });
 
-  if (!user) {
-    return Response.json({ error: "User with the national id not found" }, { status: 404 });
-  }
+  // if (!user) {
+  //   return Response.json({ error: "User with the national id not found" }, { status: 404 });
+  // }
 
-  if (!poll.allowedNationalIds.includes(user.nationalId)) {
-    return Response.json({ error: "The national ID is not allowed for this poll." }, { status: 403 });
-  }
+  // if (!poll.allowedNationalIds.includes(user.nationalId)) {
+  //   return Response.json({ error: "The national ID is not allowed for this poll." }, { status: 403 });
+  // }
 
-  const jwt = await issueJwt(user, poll);
+  // poll is guaranteed to be defined here
+  const jwt = await issueJwt(poll);
 
-  return Response.json({ verificationToken: jwt, userId: user.userId });
+  return Response.json({ verificationToken: jwt });
 }

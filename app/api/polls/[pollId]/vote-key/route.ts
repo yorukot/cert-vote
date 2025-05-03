@@ -38,7 +38,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return Response.json({ error: "User ID is required" }, { status: 400 });
   }
 
-  const jwtPayload = await verifyJwt(body.verificationToken, body.userId);
+  const jwtPayload = await verifyJwt(body.verificationToken);
 
   if (jwtPayload.pollId != pollId) {
     return Response.json({ error: "Invalid verification token" }, { status: 403 });

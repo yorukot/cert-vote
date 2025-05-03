@@ -51,6 +51,7 @@ export default function Home() {
           filteredPolls.map((i: PollModel) => (
             <PollCard
               key={i.pollId}
+              pollId={i.pollId}
               title={i.title}
               startDate={dayjs(i.startTime).unix().toString()}
               endDate={dayjs(i.endTime).unix().toString()}

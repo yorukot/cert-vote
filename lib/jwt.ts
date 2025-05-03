@@ -1,5 +1,5 @@
 import { JWTPayload, jwtVerify, SignJWT } from "jose";
-import { UserModel } from "@/lib/db/models/user";
+import user, { UserModel } from "@/lib/db/models/user";
 import { PollModel } from "@/lib/db/models/poll";
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET);
@@ -9,23 +9,22 @@ export interface VerificationPayload extends JWTPayload {
   pollId: string;
 }
 
-export async function issueJwt(user: UserModel, poll: PollModel) {
+export async function issueJwt(poll: PollModel) {
   const jwt = await new SignJWT({ pollId: poll.pollId })
-    .setProtectedHeader({ alg: "RS256", typ: "JWT" })
+    .setProtectedHeader({ alg: "HS256", typ: "JWT" })
     .setIssuedAt() // iat
     .setIssuer(issuer) // iss
-    .setAudience(user.userId) // aud
-    .setExpirationTime("2h") // exp (2 hour)
+    .setExpirationTime("1m") // exp (1 minute)
     .sign(secret);
 
   return jwt;
 }
 
-export async function verifyJwt(token: string, userId: string): Promise<VerificationPayload> {
+export async function verifyJwt(token: string): Promise<VerificationPayload> {
   try {
     const { payload, protectedHeader } = await jwtVerify<VerificationPayload>(token, secret, {
       issuer: issuer,
-      audience: userId,
+      algorithms: ["HS256"],
     });
 
     return payload;
