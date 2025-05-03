@@ -1,14 +1,14 @@
 import { Abortable, Collection, Db, DeleteResult, Filter, FindOptions, UpdateResult } from "mongodb";
 
-interface VoteKey {
+interface VoteKeyModel {
   pollId: string;
   userPublicKey: string;
   voteRandomId: string; // used to search for the public key when voting, while ensuring anonymity
 }
 
-export default class VoteKeyModel implements VoteKey {
+export default class VoteKey implements VoteKeyModel {
   static readonly collection_name = "vote-keys";
-  private readonly collection: Collection<VoteKey>;
+  private readonly collection: Collection<VoteKeyModel>;
 
   constructor(
     private readonly database: Db,
@@ -16,25 +16,25 @@ export default class VoteKeyModel implements VoteKey {
     public readonly userPublicKey: string,
     public readonly voteRandomId: string,
   ) {
-    this.collection = this.database.collection<VoteKey>(VoteKeyModel.collection_name);
+    this.collection = this.database.collection<VoteKeyModel>(VoteKey.collection_name);
   }
 
-  static async create(database: Db, pollId: string, userPublicKey: string, voteRandomId: string): Promise<VoteKeyModel> {
-    return new VoteKeyModel(database, pollId, userPublicKey, voteRandomId);
+  static async create(database: Db, pollId: string, userPublicKey: string, voteRandomId: string): Promise<VoteKey> {
+    return new VoteKey(database, pollId, userPublicKey, voteRandomId);
   }
 
-  static async find(database: Db, filter: Filter<VoteKey>, options?: FindOptions & Abortable): Promise<VoteKeyModel[]> {
-    const cursor = database.collection<VoteKey>(VoteKeyModel.collection_name).find(filter, options);
+  static async find(database: Db, filter: Filter<VoteKeyModel>, options?: FindOptions & Abortable): Promise<VoteKey[]> {
+    const cursor = database.collection<VoteKeyModel>(VoteKey.collection_name).find(filter, options);
 
     const docs = await cursor.toArray();
-    return docs.map((doc) => VoteKeyModel.fromJson(database, doc));
+    return docs.map((doc) => VoteKey.fromJson(database, doc));
   }
 
-  static async findOne(database: Db, filter: Filter<VoteKey>, options?: FindOptions & Abortable): Promise<VoteKeyModel | null> {
-    const doc = await database.collection<VoteKey>(VoteKeyModel.collection_name).findOne(filter, options);
+  static async findOne(database: Db, filter: Filter<VoteKeyModel>, options?: FindOptions & Abortable): Promise<VoteKey | null> {
+    const doc = await database.collection<VoteKeyModel>(VoteKey.collection_name).findOne(filter, options);
     if (!doc) return null;
 
-    return VoteKeyModel.fromJson(database, doc);
+    return VoteKey.fromJson(database, doc);
   }
 
   async upsert(): Promise<UpdateResult> {
@@ -51,7 +51,7 @@ export default class VoteKeyModel implements VoteKey {
     return await this.collection.deleteOne({ pollId: this.pollId, userPublicKey: this.userPublicKey });
   }
 
-  toJson(): VoteKey {
+  toJson(): VoteKeyModel {
     return {
       pollId: this.pollId,
       userPublicKey: this.userPublicKey,
@@ -59,7 +59,7 @@ export default class VoteKeyModel implements VoteKey {
     };
   }
 
-  static fromJson(database: Db, json: VoteKey): VoteKeyModel {
-    return new VoteKeyModel(database, json.pollId, json.userPublicKey, json.voteRandomId);
+  static fromJson(database: Db, json: VoteKeyModel): VoteKey {
+    return new VoteKey(database, json.pollId, json.userPublicKey, json.voteRandomId);
   }
 }
