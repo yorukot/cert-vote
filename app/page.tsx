@@ -6,13 +6,25 @@ import useSWR from "swr";
 import fetcher from "@/lib/fetcher";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PollSearch } from "@/components/poll/poll-search";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { PollModel } from "@/lib/db/models/poll";
 import dayjs from "dayjs";
+import Fuse from "fuse.js";
 
 export default function Home() {
   const { data, error, isLoading } = useSWR("/api/polls", fetcher);
   const [searchValue, setSearchValue] = useState("");
+
+  // Memoize Fuse instance and filtered results
+  const filteredPolls = useMemo(() => {
+    if (!data) return [];
+    if (!searchValue.trim()) return data;
+    const fuse = new Fuse(data, {
+      keys: ["title", "description", "creator"],
+      threshold: 0.4,
+    });
+    return fuse.search(searchValue).map((result) => result.item);
+  }, [data, searchValue]);
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center space-y-8">
@@ -20,7 +32,6 @@ export default function Home() {
         <Vote width={100} height={100} className="mb-4" />
         <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-indigo-300 to-fuchsia-500 mb-2">CertVote</h1>
         <h2 className="text-lg text-muted-foreground mb-6">Anonymous voting system with blockchain based verification system</h2>
-
         <p className="text-lg mb-4">Choose an event to vote:</p>
       </div>
       <PollSearch setValue={setSearchValue} value={searchValue} />
@@ -28,21 +39,19 @@ export default function Home() {
         {isLoading ? (
           <Skeleton className="w-full h-24" />
         ) : (
-          data.map((i: PollModel) => {
-            return (
-              <PollCard
-                key={i.pollId}
-                title={i.title}
+          filteredPolls.map((i: PollModel) => (
+            <PollCard
+              key={i.pollId}
+              title={i.title}
                 startDate={dayjs(i.startTime).unix()}
                 endDate={dayjs(i.endTime).unix()}
-                description={i.description}
-                creator={i.creator}
-                voteCount={0}
-                totalPossibleVotes={0}
-                status={i.status}
-              />
-            );
-          })
+              description={i.description}
+              creator={i.creator}
+              voteCount={0}
+              totalPossibleVotes={0}
+              status={i.status}
+            />
+          ))
         )}
       </div>
     </div>
