@@ -5,8 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Calendar, User, Info } from "lucide-react";
+import { ChevronDown, Calendar, User, Info, Vote, Check, X, Annoyed, Frown, Smile } from "lucide-react";
 import Image from "next/image";
+import { Button } from "../ui/button";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../ui/dropdown-menu";
 
 interface PollCardProps {
   title: string;
@@ -21,33 +23,16 @@ interface PollCardProps {
   className?: string;
 }
 
-export function PollCard({
-  title,
-  startDate,
-  endDate,
-  description,
-  imageSrc,
-  creator,
-  voteCount,
-  totalPossibleVotes = 100,
-  status,
-  className,
-}: PollCardProps) {
+export function PollCard({ title, startDate, endDate, description, imageSrc, creator, voteCount, totalPossibleVotes = 100, status, className }: PollCardProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const statusVariant: Record<
-    string,
-    "default" | "secondary" | "outline" | "destructive"
-  > = {
+  const statusVariant: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
     ongoing: "secondary",
     completed: "default",
     upcoming: "outline",
   };
 
-  const progressPercentage = Math.min(
-    Math.round((voteCount / totalPossibleVotes) * 100),
-    100
-  );
+  const progressPercentage = Math.min(Math.round((voteCount / totalPossibleVotes) * 100), 100);
 
   // Format timestamp to readable date
   const formatDate = (timestamp: string) => {
@@ -65,19 +50,10 @@ export function PollCard({
 
   return (
     <div className="w-full shadow-sm hover:shadow-md">
-      <Card
-        className="overflow-hidden container rounded-t-xl rounded-b-none border-t border-x border-b-0 shadow-none transition-all duration-200 relative"
-      >
-        <CardHeader
-          className="cursor-pointer flex flex-row justify-between items-center"
-          onClick={() => setIsOpen(!isOpen)}
-        >
+      <Card className="overflow-hidden container rounded-t-xl rounded-b-none border-t border-x border-b-0 shadow-none transition-all duration-200 relative">
+        <CardHeader className="cursor-pointer flex flex-row justify-between items-center" onClick={() => setIsOpen(!isOpen)}>
           <div className="flex items-center gap-3">
-            <motion.div
-              animate={{ rotate: isOpen ? 180 : 0 }}
-              transition={{ duration: 0.2 }}
-              className="text-muted-foreground"
-            >
+            <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }} className="text-muted-foreground">
               <ChevronDown size={16} />
             </motion.div>
             <CardTitle className="text-base font-semibold">{title}</CardTitle>
@@ -89,12 +65,7 @@ export function PollCard({
 
         <AnimatePresence>
           {isOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
               <CardContent className="px-6 pt-0 space-y-4">
                 {/* Dates */}
                 <div className="flex flex-col space-y-1">
@@ -119,10 +90,7 @@ export function PollCard({
                 {/* Description */}
                 {description && (
                   <div className="flex gap-2 text-xs">
-                    <Info
-                      size={12}
-                      className="text-muted-foreground flex-shrink-0 mt-0.5"
-                    />
+                    <Info size={12} className="text-muted-foreground flex-shrink-0 mt-0.5" />
                     <p className="text-sm">{description}</p>
                   </div>
                 )}
@@ -130,23 +98,36 @@ export function PollCard({
                 {/* Image */}
                 {imageSrc && (
                   <div className="relative h-32 w-full overflow-hidden rounded-md">
-                    <Image
-                      src={imageSrc}
-                      alt={`Image for ${title}`}
-                      fill
-                      className="object-cover"
-                    />
+                    <Image src={imageSrc} alt={`Image for ${title}`} fill className="object-cover" />
                   </div>
                 )}
-
-                {/* Vote count */}
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold text-primary">
-                    {voteCount}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    people voted
-                  </span>
+                <div className="flex flex-row justify-between items-center">
+                  {/* Vote count */}
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-bold text-primary">{voteCount}</span>
+                    <span className="text-xs text-muted-foreground">people voted</span>
+                  </div>
+                  {/* Voting buttons as dropdown */}
+                  <div className="flex pt-2 justify-center">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="default" size="sm" disabled={status !== "ongoing"}>
+                          <Vote size={16} /> Vote
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="center" className="flex flex-col gap-2">
+                        <DropdownMenuItem>
+                          <Smile size={16} /> Agree
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Annoyed size={16} /> Abstain
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Frown size={16} /> Disagree
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
               </CardContent>
             </motion.div>
