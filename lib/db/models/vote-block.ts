@@ -45,8 +45,6 @@ export class VoteBlock implements VoteBlockModel {
   }
 
   static async getLastBlock(database: Db) {
-    const collection = database.collection<VoteBlockModel>(this.collection_name);
-
     const cursor = await this.find(database, {}, { sort: { index: -1 }, limit: 1 });
 
     const lastBlock = cursor.at(0);
