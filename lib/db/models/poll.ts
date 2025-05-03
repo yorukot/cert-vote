@@ -1,24 +1,32 @@
 import { Db, Collection, FindCursor, UpdateResult, DeleteResult, Filter, WithId } from "mongodb";
 
-export default class PollModel {
+export interface PollModel {
+  pollId: string;
+  title: string;
+  description: string;
+  status: "ongoing" | "completed" | "upcoming";
+}
+
+export default class Poll implements PollModel {
   static readonly collection_name = "polls";
-  public readonly collection: Collection<PollModel>;
+  private readonly collection: Collection<Poll>;
 
   constructor(
     private readonly database: Db,
     public readonly pollId: string,
     public title: string,
     public description: string,
+    public status: "ongoing" | "completed" | "upcoming"
   ) {
-    this.collection = this.database.collection<PollModel>(PollModel.collection_name);
+    this.collection = this.database.collection<Poll>(Poll.collection_name);
   }
 
   static async find(
     database: Db,
-    filter: Filter<PollModel>
-  ): Promise<FindCursor<WithId<PollModel>>> {
+    filter: Filter<Poll>
+  ): Promise<FindCursor<WithId<Poll>>> {
     return database
-      .collection<PollModel>(PollModel.collection_name)
+      .collection<Poll>(Poll.collection_name)
       .find(filter);
   }
 
@@ -32,5 +40,14 @@ export default class PollModel {
 
   async remove(): Promise<DeleteResult> {
     return await this.collection.deleteOne({ pollId: this.pollId });
+  }
+
+  toJson(): PollModel {
+    return {
+      pollId: this.pollId,
+      title: this.title,
+      description: this.description,
+      status: this.status
+    };
   }
 }
