@@ -1,3 +1,38 @@
-# CertVote
+# 🗳️ CertVote｜上鏈式匿名投票驗證系統
 
-Basically, this is a voting system with blockchain verification. It allows users to cast votes, and verify the integrity of the voting process using blockchain technology. The system is designed to ensure transparency, security, and trust in the voting process.
+**CertVote** 是一套結合區塊鏈精神與匿名驗證機制的投票系統，  
+讓使用者在 **不揭露身分** 的情況下，完成一次性投票並取得可驗證、不可竄改的憑證。  
+系統特別適用於校園選舉、社群治理與 DAO 模擬等場景，  
+強調資料透明、流程可信與使用者隱私。
+
+---
+
+## 📌 專案特色
+
+- **匿名性**：使用者無需登入，透過 voterUUID 保持身分隱私  
+- **可驗證性**：每筆投票皆產生唯一 hash 憑證，可供查詢驗證  
+- **不可竄改**：投票資料經 hash 串接模擬區塊鏈，確保完整性  
+- **防重複投票**：利用 localStorage 限制同裝置僅能投票一次  
+- **查詢機制**：提供查詢頁面，輸入 hash 或 UUID 驗證投票紀錄  
+
+---
+
+## 🧩 系統架構
+
+- **前端**：Next.js + Tailwind CSS + Chart.js + axios  
+- **後端**：Express.js + Node.js + uuid + crypto  
+- **資料儲存**：JSON 或 SQLite，模擬區塊鏈資料結構  
+
+---
+
+## 🔧 使用說明
+
+### 🗳️ 投票流程
+1. 使用者進入投票頁面，選擇選項後提交  
+2. 系統產生 voterUUID（匿名）  
+3. 將 UUID、選項與時間戳記計算 hash，建立區塊並串接模擬鏈  
+4. 回傳 hash 與 voterUUID，生成憑證供使用者保存  
+
+### 🔍 查詢驗證
+- 使用者可於查詢頁面輸入 `hash` 或 `UUID`  
+- 顯示投票選項與時間，驗證紀錄未被竄改  
