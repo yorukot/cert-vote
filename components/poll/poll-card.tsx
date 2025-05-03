@@ -5,12 +5,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Calendar, User, Info } from "lucide-react";
+import Image from "next/image";
 
 interface PollCardProps {
   title: string;
   startDate: string;
+  endDate: string;
+  description?: string;
+  imageSrc?: string;
+  creator?: string;
   voteCount: number;
+  totalPossibleVotes?: number;
   status: "ongoing" | "completed" | "upcoming";
   className?: string;
 }
@@ -18,22 +24,35 @@ interface PollCardProps {
 export function PollCard({
   title,
   startDate,
+  endDate,
+  description,
+  imageSrc,
+  creator,
   voteCount,
+  totalPossibleVotes = 100,
   status,
   className,
 }: PollCardProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const statusVariant: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
+  const statusVariant: Record<
+    string,
+    "default" | "secondary" | "outline" | "destructive"
+  > = {
     ongoing: "secondary",
     completed: "default",
     upcoming: "outline",
   };
 
+  const progressPercentage = Math.min(
+    Math.round((voteCount / totalPossibleVotes) * 100),
+    100
+  );
+
   return (
-    <Card 
+    <Card
       className={cn(
-        "overflow-hidden w-full max-w-md rounded-xl border shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer", 
+        "overflow-hidden w-full max-w-md rounded-xl border shadow-sm hover:shadow-md transition-all duration-200 relative",
         {
           "border-primary/20": status === "ongoing",
           "border-primary/40": status === "completed",
@@ -41,17 +60,11 @@ export function PollCard({
         },
         className
       )}
-      onClick={() => setIsOpen(!isOpen)}
     >
-      <div className={cn(
-        "h-1 w-full", 
-        {
-          "bg-secondary": status === "ongoing",
-          "bg-primary": status === "completed",
-          "bg-muted-foreground": status === "upcoming"
-        }
-      )} />
-      <CardHeader className="py-2 px-4 flex flex-row justify-between items-center">
+      <CardHeader
+        className="cursor-pointer pt-3 pb-2 px-4 flex flex-row justify-between items-center border-t-2 border-t-transparent"
+        onClick={() => setIsOpen(!isOpen)}
+      >
         <div className="flex items-center gap-3">
           <motion.div
             animate={{ rotate: isOpen ? 180 : 0 }}
@@ -66,7 +79,7 @@ export function PollCard({
           {status}
         </Badge>
       </CardHeader>
-      
+
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -75,19 +88,75 @@ export function PollCard({
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <CardContent className="px-4 py-3 space-y-3">
-              <div className="flex items-center text-xs text-muted-foreground">
-                <span>Start date: {startDate}</span>
+            <CardContent className="px-4 pb-12 pt-0 space-y-4">
+              {/* Dates */}
+              <div className="flex flex-col space-y-1">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Calendar size={12} />
+                  <span>Start: {startDate}</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Calendar size={12} />
+                  <span>End: {endDate}</span>
+                </div>
               </div>
-              
+
+              {/* Creator */}
+              {creator && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <User size={12} />
+                  <span>Created by: {creator}</span>
+                </div>
+              )}
+
+              {/* Description */}
+              {description && (
+                <div className="flex gap-2 text-xs">
+                  <Info
+                    size={12}
+                    className="text-muted-foreground flex-shrink-0 mt-0.5"
+                  />
+                  <p className="text-sm">{description}</p>
+                </div>
+              )}
+
+              {/* Image */}
+              {imageSrc && (
+                <div className="relative h-32 w-full overflow-hidden rounded-md">
+                  <Image
+                    src={imageSrc}
+                    alt={`Image for ${title}`}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              )}
+
+              {/* Vote count */}
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-primary">{voteCount}</span>
-                <span className="text-xs text-muted-foreground">people voted</span>
+                <span className="text-3xl font-bold text-primary">
+                  {voteCount}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  people voted
+                </span>
               </div>
             </CardContent>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Progress bar - always visible at bottom */}
+      <div className="absolute bottom-0 left-0 w-full h-2 bg-muted">
+        <div
+          className={cn("h-full transition-all", {
+            "bg-secondary": status === "ongoing",
+            "bg-primary": status === "completed",
+            "bg-muted-foreground": status === "upcoming",
+          })}
+          style={{ width: `${progressPercentage}%` }}
+        />
+      </div>
     </Card>
   );
 }
