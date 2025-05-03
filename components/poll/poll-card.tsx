@@ -140,7 +140,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 userPublicKey: publicKeyBase64,
-                randomId,
+                voteRandomId: randomId,
                 verificationToken: data.verificationToken,
                 userId,
               }),
