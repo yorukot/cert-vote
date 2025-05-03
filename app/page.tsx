@@ -1,14 +1,18 @@
 "use client";
 
-import Image from "next/image";
 import { PollCard } from "@/components/poll/poll-card";
 import { Vote } from "lucide-react";
 import useSWR from "swr";
 import fetcher from "@/lib/fetcher";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PollSearch } from "@/components/poll/poll-search";
+import { useState } from "react";
+import { PollModel } from "@/lib/db/models/poll";
+
 
 export default function Home() {
   const { data, error, isLoading } = useSWR("/api/polls", fetcher);
+  const [searchValue, setSearchValue] = useState("");
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center space-y-8">
@@ -19,12 +23,13 @@ export default function Home() {
 
         <p className="text-lg mb-4">Choose an event to vote:</p>
       </div>
+        <PollSearch setValue={setSearchValue} value={searchValue} />
       <div className="flex flex-col gap-3 w-full max-w-3xl justify-center items-center">
         <>
           {isLoading ? (
             <Skeleton className="w-full h-24" />
           ) : (
-            data.map((i) => {
+            data.map((i: PollModel[]) => {
               return <div />;
             })
           )}
