@@ -48,15 +48,15 @@ export function PollCard({
     Math.round((voteCount / totalPossibleVotes) * 100),
     100
   );
-  
+
   // Format timestamp to readable date
   const formatDate = (timestamp: string) => {
     try {
       const date = new Date(parseInt(timestamp) * 1000);
-      return date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
       });
     } catch (e) {
       return timestamp;
@@ -64,106 +64,100 @@ export function PollCard({
   };
 
   return (
-    <Card
-      className={cn(
-        "overflow-hidden container rounded-xl border shadow-sm hover:shadow-md transition-all duration-200 relative",
-        {
-          "border-primary/20": status === "ongoing",
-          "border-primary/40": status === "completed",
-          "border-muted": status === "upcoming",
-        },
-        className
-      )}
-    >
-      <CardHeader
-        className="cursor-pointer pt-3 pb-2 px-4 flex flex-row justify-between items-center"
-        onClick={() => setIsOpen(!isOpen)}
+    <div className="w-full shadow-sm hover:shadow-md">
+      <Card
+        className="overflow-hidden container rounded-t-xl rounded-b-none border-t border-x border-b-0 shadow-none transition-all duration-200 relative"
       >
-        <div className="flex items-center gap-3">
-          <motion.div
-            animate={{ rotate: isOpen ? 180 : 0 }}
-            transition={{ duration: 0.2 }}
-            className="text-muted-foreground"
-          >
-            <ChevronDown size={16} />
-          </motion.div>
-          <CardTitle className="text-base font-semibold">{title}</CardTitle>
-        </div>
-        <Badge variant={statusVariant[status]} className="capitalize text-xs">
-          {status}
-        </Badge>
-      </CardHeader>
+        <CardHeader
+          className="cursor-pointer flex flex-row justify-between items-center"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <div className="flex items-center gap-3">
+            <motion.div
+              animate={{ rotate: isOpen ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+              className="text-muted-foreground"
+            >
+              <ChevronDown size={16} />
+            </motion.div>
+            <CardTitle className="text-base font-semibold">{title}</CardTitle>
+          </div>
+          <Badge variant={statusVariant[status]} className="capitalize text-xs">
+            {status}
+          </Badge>
+        </CardHeader>
 
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <CardContent className="px-4 pb-12 pt-0 space-y-4">
-              {/* Dates */}
-              <div className="flex flex-col space-y-1">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Calendar size={12} />
-                  <span>Start: {formatDate(startDate)}</span>
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <CardContent className="px-6 pt-0 space-y-4">
+                {/* Dates */}
+                <div className="flex flex-col space-y-1">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Calendar size={12} />
+                    <span>Start: {formatDate(startDate)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Calendar size={12} />
+                    <span>End: {formatDate(endDate)}</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Calendar size={12} />
-                  <span>End: {formatDate(endDate)}</span>
+
+                {/* Creator */}
+                {creator && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <User size={12} />
+                    <span>Created by: {creator}</span>
+                  </div>
+                )}
+
+                {/* Description */}
+                {description && (
+                  <div className="flex gap-2 text-xs">
+                    <Info
+                      size={12}
+                      className="text-muted-foreground flex-shrink-0 mt-0.5"
+                    />
+                    <p className="text-sm">{description}</p>
+                  </div>
+                )}
+
+                {/* Image */}
+                {imageSrc && (
+                  <div className="relative h-32 w-full overflow-hidden rounded-md">
+                    <Image
+                      src={imageSrc}
+                      alt={`Image for ${title}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                )}
+
+                {/* Vote count */}
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold text-primary">
+                    {voteCount}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    people voted
+                  </span>
                 </div>
-              </div>
+              </CardContent>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-              {/* Creator */}
-              {creator && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <User size={12} />
-                  <span>Created by: {creator}</span>
-                </div>
-              )}
-
-              {/* Description */}
-              {description && (
-                <div className="flex gap-2 text-xs">
-                  <Info
-                    size={12}
-                    className="text-muted-foreground flex-shrink-0 mt-0.5"
-                  />
-                  <p className="text-sm">{description}</p>
-                </div>
-              )}
-
-              {/* Image */}
-              {imageSrc && (
-                <div className="relative h-32 w-full overflow-hidden rounded-md">
-                  <Image
-                    src={imageSrc}
-                    alt={`Image for ${title}`}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              )}
-
-              {/* Vote count */}
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-primary">
-                  {voteCount}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  people voted
-                </span>
-              </div>
-            </CardContent>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Progress bar - always visible at bottom */}
-      <div className="absolute bottom-0 left-0 w-full h-2 bg-muted">
+        {/* Progress bar - always visible at bottom */}
+      </Card>
+      <div className="w-full h-3 bg-muted border-x border-b border-primary/20 rounded-b-xl">
         <div
-          className={cn("h-full transition-all", {
+          className={cn("h-full transition-all rounded-bl-xl", {
             "bg-secondary": status === "ongoing",
             "bg-primary": status === "completed",
             "bg-muted-foreground": status === "upcoming",
@@ -171,6 +165,6 @@ export function PollCard({
           style={{ width: `${progressPercentage}%` }}
         />
       </div>
-    </Card>
+    </div>
   );
 }
