@@ -1,5 +1,8 @@
+import { PollExample } from "@/components/poll/poll-example";
 import Image from "next/image";
 
 export default function Home() {
-  return <h1>123</h1>;
+  return <div>
+    <PollExample />
+  </div>;
 }
