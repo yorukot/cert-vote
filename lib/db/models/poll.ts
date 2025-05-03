@@ -1,4 +1,4 @@
-import { Db, Collection, FindCursor, UpdateResult, DeleteResult, Filter, WithId } from "mongodb";
+import { Abortable, Collection, Db, DeleteResult, Filter, FindOptions, UpdateResult } from "mongodb";
 
 export interface PollModel {
   pollId: string;
@@ -16,25 +16,40 @@ export default class Poll implements PollModel {
     public readonly pollId: string,
     public title: string,
     public description: string,
-    public status: "ongoing" | "completed" | "upcoming"
+    public status: "ongoing" | "completed" | "upcoming",
   ) {
     this.collection = this.database.collection<Poll>(Poll.collection_name);
   }
 
-  static async find(
-    database: Db,
-    filter: Filter<Poll>
-  ): Promise<FindCursor<WithId<Poll>>> {
-    return database
-      .collection<Poll>(Poll.collection_name)
-      .find(filter);
+  static async create(database: Db, title: string, description: string, status: "ongoing" | "completed" | "upcoming"): Promise<Poll> {
+    const pollId = crypto.randomUUID();
+
+    return new Poll(database, pollId, title, description, status);
+  }
+
+  static async find(database: Db, filter: Filter<Poll>, options?: FindOptions & Abortable): Promise<Poll[]> {
+    const cursor = database.collection<Poll>(Poll.collection_name).find(filter, options);
+
+    const docs = await cursor.toArray();
+    return docs.map((doc) => new Poll(database, doc.pollId, doc.title, doc.description, doc.status));
+  }
+
+  static async findOne(database: Db, filter: Filter<Poll>, options?: FindOptions & Abortable): Promise<Poll | null> {
+    const doc = await database.collection<Poll>(Poll.collection_name).findOne(filter, options);
+    if (!doc) return null;
+
+    const poll = new Poll(database, doc.pollId, doc.title, doc.description, doc.status);
+
+    return poll;
   }
 
   async upsert(): Promise<UpdateResult> {
     return await this.collection.updateOne(
       { pollId: this.pollId },
-      { $set: { title: this.title, description: this.description } },
-      { upsert: true }
+      {
+        $set: this.toJson(),
+      },
+      { upsert: true },
     );
   }
 
@@ -42,12 +57,16 @@ export default class Poll implements PollModel {
     return await this.collection.deleteOne({ pollId: this.pollId });
   }
 
+  static fromJson(database: Db, json: PollModel): Poll {
+    return new Poll(database, json.pollId, json.title, json.description, json.status);
+  }
+
   toJson(): PollModel {
     return {
       pollId: this.pollId,
       title: this.title,
       description: this.description,
-      status: this.status
+      status: this.status,
     };
   }
 }
