@@ -40,7 +40,7 @@ export default function Home() {
       <div className="grid place-items-center">
         <Vote width={100} height={100} className="mb-4" />
         <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-indigo-300 to-fuchsia-500 mb-2">CertVote</h1>
-        <h2 className="text-lg text-muted-foreground mb-6">Anonymous voting system with blockchain based verification system</h2>
+        <h2 className="text-lg text-muted-foreground mb-6 text-center">Anonymous voting system with blockchain based verification system</h2>
         <p className="text-lg mb-4">Choose an event to vote:</p>
       </div>
       <PollSearch setValue={setSearchValue} value={searchValue} />
