@@ -56,10 +56,10 @@ export class VoteBlock implements VoteBlockModel {
     return VoteBlock.fromJson(database, lastBlock);
   }
 
-  static async append(
+  /// Note: You still need to call upsert() after this to save the block to the database.
+  static async prepareNextBlock(
     database: Db,
     pollId: string,
-    index: number,
     userPublicKey: string,
     voteRandomId: string,
     selectedOption: "agree" | "disagree" | "abstain",
@@ -73,6 +73,8 @@ export class VoteBlock implements VoteBlockModel {
 
       previousBlock = genesisBlock;
     }
+
+    const index = previousBlock.index + 1;
 
     const hash = createBlockHash(previousBlock.hash, pollId, index, userPublicKey, voteRandomId, selectedOption, userSignature);
 

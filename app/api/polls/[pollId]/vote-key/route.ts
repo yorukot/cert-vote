@@ -5,7 +5,7 @@ import { verifyJwt } from "@/lib/jwt";
 import VoteKey from "@/lib/db/models/vote-key";
 
 interface CreateVoteKeyBody {
-  userPublicKey: string;
+  userPublicKey: string; // The public key of the user, in pkcs8 format
   randomId: string;
   verificationToken: string; // The verification token issued in the previous step
   userId: string;
