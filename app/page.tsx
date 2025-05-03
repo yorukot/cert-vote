@@ -18,7 +18,7 @@ export default function Home() {
       </div>
       <div className="flex flex-col gap-3 w-full max-w-3xl justify-center items-center">
         <PollCard
-          title="Tomorrow's weather"
+          title="台灣是否重啟"
           startDate="1746264846"
           endDate="1746364846"
           description="Vote for your prediction of tomorrow's weather."
