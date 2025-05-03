@@ -15,7 +15,7 @@ export async function issueJwt(user: UserModel, poll: PollModel) {
     .setIssuedAt() // iat
     .setIssuer(issuer) // iss
     .setAudience(user.userId) // aud
-    .setExpirationTime("2h") // exp (2 小時後)
+    .setExpirationTime("2h") // exp (2 hour)
     .sign(secret);
 
   return jwt;
