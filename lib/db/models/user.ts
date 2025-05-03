@@ -25,16 +25,14 @@ export default class User implements UserModel {
     const cursor = database.collection<UserModel>(User.collection_name).find(filter, options);
 
     const docs = await cursor.toArray();
-    return docs.map((doc) => new User(database, doc.nationalId, doc.userId));
+    return docs.map((doc) => User.fromJson(database, doc));
   }
 
   static async findOne(database: Db, filter: Filter<UserModel>, options?: FindOptions & Abortable): Promise<User | null> {
     const doc = await database.collection<UserModel>(User.collection_name).findOne(filter, options);
     if (!doc) return null;
 
-    const user = new User(database, doc.nationalId, doc.userId);
-
-    return user;
+    return User.fromJson(database, doc);
   }
 
   async upsert(): Promise<UpdateResult> {
@@ -56,5 +54,9 @@ export default class User implements UserModel {
       nationalId: this.nationalId,
       userId: this.userId,
     };
+  }
+
+  static fromJson(database: Db, json: UserModel): User {
+    return new User(database, json.nationalId, json.userId);
   }
 }

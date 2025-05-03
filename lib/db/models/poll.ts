@@ -33,16 +33,14 @@ export default class Poll implements PollModel {
     const cursor = database.collection<PollModel>(Poll.collection_name).find(filter, options);
 
     const docs = await cursor.toArray();
-    return docs.map((doc) => new Poll(database, doc.pollId, doc.title, doc.description, doc.status, doc.allowedNationalIds || []));
+    return docs.map((doc) => Poll.fromJson(database, doc));
   }
 
   static async findOne(database: Db, filter: Filter<PollModel>, options?: FindOptions & Abortable): Promise<Poll | null> {
     const doc = await database.collection<PollModel>(Poll.collection_name).findOne(filter, options);
     if (!doc) return null;
 
-    const poll = new Poll(database, doc.pollId, doc.title, doc.description, doc.status, doc.allowedNationalIds || []);
-
-    return poll;
+    return Poll.fromJson(database, doc);
   }
 
   async upsert(): Promise<UpdateResult> {
