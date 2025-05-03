@@ -69,11 +69,25 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   // Verify the signature using subtle crypto, with voteKey.userPublicKey
   const encoder = new TextEncoder();
-  const data = encoder.encode(pollId + voteKey.voteRandomId + body.selectedOption);
-  const signature = encoder.encode(body.userSignature);
-  const publicKey = await subtle.importKey("pkcs8", encoder.encode(voteKey.userPublicKey), "Ed25519", false, ["verify"]);
+  const data = encoder.encode(voteKey.voteRandomId + body.selectedOption);
+  const signature = Buffer.from(body.userSignature, 'base64');
+  
+  // Import the public key for ECDSA
+  const publicKeyRaw = Buffer.from(voteKey.userPublicKey, 'base64');
+  const publicKey = await subtle.importKey(
+    "raw",
+    publicKeyRaw,
+    { name: "ECDSA", namedCurve: "P-256" },
+    false,
+    ["verify"]
+  );
 
-  const isValidSignature = await crypto.subtle.verify("Ed25519", publicKey, signature, data);
+  const isValidSignature = await subtle.verify(
+    { name: "ECDSA", hash: { name: "SHA-256" } },
+    publicKey,
+    signature,
+    data
+  );
   if (!isValidSignature) {
     return Response.json({ error: "Invalid signature" }, { status: 403 });
   }

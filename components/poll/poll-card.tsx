@@ -11,6 +11,7 @@ import { Button } from "../ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../ui/dropdown-menu";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "../ui/dialog";
 import { Input } from "../ui/input";
+import { v4 as uuidv4 } from "uuid";
 
 interface PollCardProps {
   pollId: string;
@@ -34,6 +35,47 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [generatingKey, setGeneratingKey] = useState(false);
+  const [keyGenError, setKeyGenError] = useState<string | null>(null);
+  
+  // Function to submit the final vote using the generated key
+  const submitVote = async (randomId: string, privateKey: CryptoKey, option: string) => {
+    try {
+      // Create signature for the vote
+      const encoder = new TextEncoder();
+      const data = encoder.encode(randomId + option);
+      const signature = await window.crypto.subtle.sign(
+        { name: "ECDSA", hash: { name: "SHA-256" } },
+        privateKey,
+        data
+      );
+      
+      // Convert signature to Base64
+      const signatureBase64 = btoa(String.fromCharCode(...new Uint8Array(signature)));
+      
+      // Submit the vote
+      const voteRes = await fetch(`/api/polls/${pollId}/vote-blocks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          voteRandomId: randomId,
+          selectedOption: option,
+          userSignature: signatureBase64
+        })
+      });
+      
+      if (!voteRes.ok) {
+        const errData = await voteRes.json();
+        throw new Error(errData.error || "Failed to submit vote");
+      }
+      
+      // Update success state
+      setSuccess(true);
+    } catch (err: any) {
+      setError(err.message || "Failed to submit vote");
+      setGeneratingKey(false);
+    }
+  };
 
   const statusVariant: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
     ongoing: "secondary",
@@ -67,6 +109,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
     setSubmitting(true);
     setError(null);
     setSuccess(false);
+    setKeyGenError(null);
     try {
       const res = await fetch(`/api/polls/${pollId}/verification-token`, {
         method: "POST",
@@ -78,13 +121,57 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
       if (data.verificationToken) {
         localStorage.setItem(`poll_jwt_${pollId}`, data.verificationToken);
         setSuccess(true);
+        setGeneratingKey(true);
+        // Generate Ed25519 key pair and UUID, send to backend
+        (async () => {
+          try {
+            const keyPair = await window.crypto.subtle.generateKey(
+              { name: "ECDSA", namedCurve: "P-256" },
+              true, 
+              ["sign", "verify"]
+            );
+            const publicKeyBuffer = await window.crypto.subtle.exportKey("raw", keyPair.publicKey);
+            const publicKeyBase64 = btoa(String.fromCharCode(...new Uint8Array(publicKeyBuffer)));
+            const randomId = uuidv4();
+            // You may want to get userId from the JWT or user context
+            const userId = "anonymous";
+            const voteKeyRes = await fetch(`/api/polls/${pollId}/vote-key`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                userPublicKey: publicKeyBase64,
+                randomId,
+                verificationToken: data.verificationToken,
+                userId,
+              }),
+            });
+            if (!voteKeyRes.ok) {
+              const errData = await voteKeyRes.json();
+              throw new Error(errData.error || "Failed to register vote key");
+            }
+            // Store necessary data for voting
+            localStorage.setItem(`poll_random_id_${pollId}`, randomId);
+            
+            // Export private key for signing
+            const privateKeyBuffer = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
+            const privateKeyBase64 = btoa(String.fromCharCode(...new Uint8Array(privateKeyBuffer)));
+            localStorage.setItem(`poll_private_key_${pollId}`, privateKeyBase64);
+            
+            // Now submit the actual vote
+            await submitVote(randomId, keyPair.privateKey, selectedVote!);
+            
+            setGeneratingKey(false);
+            setDialogOpen(false);
+            setNationalId("");
+            setSelectedVote(null);
+          } catch (err: any) {
+            setKeyGenError(err.message || "Key generation failed");
+            setGeneratingKey(false);
+          }
+        })();
       }
-      setDialogOpen(false);
-      setNationalId("");
-      setSelectedVote(null);
     } catch (err: any) {
       setError(err.message || "Unknown error");
-    } finally {
       setSubmitting(false);
     }
   };
@@ -173,32 +260,37 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
                     </DropdownMenu>
                   </div>
                 </div>
-                {/* Dialog for national ID input */}
+                {/* Dialog for national ID input and key generation */}
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DialogContent>
-                    <form onSubmit={handleDialogSubmit} className="space-y-4">
-                      <DialogHeader>
-                        <DialogTitle>Enter National ID</DialogTitle>
-                        <DialogDescription>
-                          To vote <span className="font-semibold">{selectedVote}</span>, please enter your national ID.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <Input
-                        placeholder="National ID"
-                        value={nationalId}
-                        onChange={e => setNationalId(e.target.value)}
-                        required
-                        autoFocus
-                        disabled={submitting}
-                      />
-                      {error && <div className="text-destructive text-xs">{error}</div>}
-                      {success && <div className="text-green-600 text-xs">Vote token saved!</div>}
-                      <DialogFooter>
-                        <Button type="submit" disabled={submitting || !nationalId}>
-                          {submitting ? "Submitting..." : "Submit Vote"}
-                        </Button>
-                      </DialogFooter>
-                    </form>
+                    {generatingKey || submitting ? (
+                      <div className="flex flex-col items-center justify-center py-4">
+                        <span className="text-sm text-muted-foreground mb-2">Generating public/private key for encryption…</span>
+                        <span className="text-xs text-destructive mb-4">Do not close or refresh this window during key generation.</span>
+                        <svg className="animate-spin h-6 w-6 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                        </svg>
+                        {keyGenError && <div className="text-destructive text-xs mt-2">{keyGenError}</div>}
+                      </div>
+                    ) : (
+                      <form onSubmit={handleDialogSubmit} className="space-y-4">
+                        <DialogHeader>
+                          <DialogTitle>Enter National ID</DialogTitle>
+                          <DialogDescription>
+                            To vote <span className="font-semibold">{selectedVote}</span>, please enter your national ID.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <Input placeholder="National ID" value={nationalId} onChange={(e) => setNationalId(e.target.value)} required autoFocus disabled={submitting} />
+                        {error && <div className="text-destructive text-xs">{error}</div>}
+                        {success && <div className="text-green-600 text-xs">Vote token saved!</div>}
+                        <DialogFooter>
+                          <Button type="submit" disabled={submitting || !nationalId}>
+                            {submitting ? "Submitting..." : "Submit Vote"}
+                          </Button>
+                        </DialogFooter>
+                      </form>
+                    )}
                   </DialogContent>
                 </Dialog>
               </CardContent>
