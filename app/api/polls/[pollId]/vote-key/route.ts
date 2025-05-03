@@ -7,8 +7,8 @@ import VoteKey from "@/lib/db/models/vote-key";
 interface CreateVoteKeyBody {
   userPublicKey: string;
   randomId: string;
-  verificationToken: string;
-  userId: string; // The verification token issued in the previous step
+  verificationToken: string; // The verification token issued in the previous step
+  userId: string;
 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ pollId: string }> }) {
