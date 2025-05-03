@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PollSearch } from "@/components/poll/poll-search";
 import { useState } from "react";
 import { PollModel } from "@/lib/db/models/poll";
-
+import dayjs from "dayjs";
 
 export default function Home() {
   const { data, error, isLoading } = useSWR("/api/polls", fetcher);
@@ -23,60 +23,27 @@ export default function Home() {
 
         <p className="text-lg mb-4">Choose an event to vote:</p>
       </div>
-        <PollSearch setValue={setSearchValue} value={searchValue} />
+      <PollSearch setValue={setSearchValue} value={searchValue} />
       <div className="flex flex-col gap-3 w-full max-w-3xl justify-center items-center">
-        <>
-          {isLoading ? (
-            <Skeleton className="w-full h-24" />
-          ) : (
-            data.map((i: PollModel) => {
-              return (
-                <PollCard
-                  key={i.pollId}
-                  title={i.title}
-                  startDate={i.startTime.toISOString()}
-                  endDate={i.endTime.toISOString()}
-                  description={i.description}
-                  creator={i.creator}
-                  voteCount={0}
-                  totalPossibleVotes={0}
-                  status={i.status}
-                />
-              );
-            })
-          )}
-          <PollCard
-            title="台灣是否重啟"
-            startDate="1746264846"
-            endDate="1746364846"
-            description="Vote for your prediction of tomorrow's weather."
-            creator="Weather Team"
-            voteCount={10}
-            totalPossibleVotes={50}
-            status="ongoing"
-          />
-
-          <PollCard
-            title="Company offsite"
-            startDate="1746264846"
-            endDate="1746464846"
-            description="Vote for the location of our next company offsite. Options: Mountains, Beach, City."
-            creator="HR Team"
-            voteCount={24}
-            totalPossibleVotes={30}
-            status="completed"
-          />
-
-          <PollCard
-            title="Team building"
-            startDate="1756264846"
-            endDate="1757264846"
-            description="Choose an activity for our next team building event."
-            voteCount={0}
-            totalPossibleVotes={15}
-            status="upcoming"
-          />
-        </>
+        {isLoading ? (
+          <Skeleton className="w-full h-24" />
+        ) : (
+          data.map((i: PollModel) => {
+            return (
+              <PollCard
+                key={i.pollId}
+                title={i.title}
+                startDate={dayjs(i.startTime).unix()}
+                endDate={dayjs(i.endTime).unix()}
+                description={i.description}
+                creator={i.creator}
+                voteCount={0}
+                totalPossibleVotes={0}
+                status={i.status}
+              />
+            );
+          })
+        )}
       </div>
     </div>
   );
