@@ -248,6 +248,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
                   setNationalId("");
                   setGeneratingKey(false);
                   setSubmitting(false);
+                  setRandomUserId(null);
                 }}
               >
                 Close
