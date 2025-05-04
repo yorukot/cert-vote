@@ -242,7 +242,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
                   navigator.clipboard.writeText(voteHash);
                 }}
               >
-                Copy and close
+                Copy block and close
               </AlertDialogAction>
             )}
           </AlertDialogFooter>
@@ -312,20 +312,20 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
                     <div className="flex pt-2 justify-center">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="default" size="sm" disabled={status !== "ongoing"}>
+                          <Button variant="default" size="sm" className={cn(status === "ongoing" && "cursor-pointer")} disabled={status !== "ongoing"}>
                             <Vote size={16} /> Vote
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="center" className="flex flex-col gap-2">
-                          <DropdownMenuItem onClick={() => handleVoteClick("agree")}>
+                          <DropdownMenuItem onClick={() => handleVoteClick("agree")} className="cursor-pointer">
                             {" "}
                             <Smile size={16} /> Agree{" "}
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleVoteClick("abstain")}>
+                          <DropdownMenuItem onClick={() => handleVoteClick("abstain")} className="cursor-pointer">
                             {" "}
                             <Annoyed size={16} /> Abstain{" "}
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleVoteClick("disagree")}>
+                          <DropdownMenuItem onClick={() => handleVoteClick("disagree")} className="cursor-pointer">
                             {" "}
                             <Frown size={16} /> Disagree{" "}
                           </DropdownMenuItem>
