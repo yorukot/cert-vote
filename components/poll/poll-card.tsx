@@ -5,13 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Calendar, User, Info, Vote, Check, X, Annoyed, Frown, Smile } from "lucide-react";
+import { ChevronDown, Calendar, User, Info, Vote, Check, X, Annoyed, Frown, Smile, LoaderCircle, ClipboardCopy } from "lucide-react";
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../ui/dropdown-menu";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "../ui/dialog";
 import { Input } from "../ui/input";
-import { LoaderCircle, ClipboardCopy } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import Confetti from "react-confetti";
 import { useWindowSize } from "react-use";
@@ -290,8 +289,8 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
 
                   {/* Description */}
                   {description && (
-                    <div className="flex gap-2 text-xs">
-                      <Info size={12} className="text-muted-foreground flex-shrink-0 mt-0.5" />
+                    <div className="flex gap-2 text-xs place-items-center">
+                      <Info size={16} className="text-muted-foreground flex-shrink-0 mt-0.5" />
                       <p className="text-sm">{description}</p>
                     </div>
                   )}
