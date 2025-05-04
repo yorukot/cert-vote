@@ -46,6 +46,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
   const [voteHash, setVoteHash] = useState<string | null>(null);
   const [randomUserId, setRandomUserId] = useState<string | null>(null);
   const [voted, setVoted] = useState<boolean>(false);
+  const [isFacialWindowOpened, setIsFacialWindowOpened] = useState(false);
 
   // Function to clear all sensitive voting data
   const clearVotingData = () => {
@@ -234,7 +235,6 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
           <AlertDialogFooter>
             <AlertDialogCancel asChild>
               <Button
-                disabled={voted}
                 variant={voteHash ? "secondary" : "default"}
                 className="cursor-pointer"
                 onClick={() => {
@@ -326,8 +326,8 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
                     <div className="flex pt-2 justify-center">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="default" size="sm" className={cn(status === "ongoing" && "cursor-pointer")} disabled={status !== "ongoing"}>
-                            <Vote size={16} /> Vote
+                          <Button variant="default" size="sm" className={cn(status === "ongoing" && "cursor-pointer")} disabled={status !== "ongoing" || voted}>
+                            <Vote size={16} /> {voted ? "Voted" : "Vote"}
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="center" className="flex flex-col gap-2">
@@ -366,10 +366,22 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
                             </DialogDescription>
                           </DialogHeader>
                           <Input placeholder="National ID" value={nationalId} onChange={(e) => setNationalId(e.target.value)} required autoFocus disabled={submitting} />
+                          <Input placeholder="National ID card number" />
                           {error && <div className="text-destructive text-xs">{error}</div>}
                           {success && <div className="text-green-600 text-xs">Vote token saved!</div>}
                           <DialogFooter>
-                            <Button type="submit" disabled={submitting || !nationalId}>
+                            <Button
+                              disabled={isFacialWindowOpened}
+                              variant={isFacialWindowOpened ? "outline" : "default"}
+                              className="cursor-pointer"
+                              onClick={() => {
+                                window.open("/face", "_blank")?.focus();
+                                setIsFacialWindowOpened(true);
+                              }}
+                            >
+                              Scan your face
+                            </Button>
+                            <Button type="submit" disabled={submitting || !nationalId || !isFacialWindowOpened} variant={isFacialWindowOpened ? "default" : "outline"}>
                               {submitting ? "Submitting..." : "Submit Vote"}
                             </Button>
                           </DialogFooter>

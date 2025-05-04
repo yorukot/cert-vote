@@ -20,6 +20,8 @@ function getPollStatus(start: string | Date, end: string | Date): "upcoming" | "
   return "ongoing";
 }
 
+const statusOrder = { ongoing: 0, upcoming: 1, completed: 2 };
+
 export default function Home() {
   const { data, error, isLoading } = useSWR("/api/polls", fetcher);
   const [searchValue, setSearchValue] = useState("");
@@ -32,7 +34,10 @@ export default function Home() {
       keys: ["title", "description", "creator"],
       threshold: 0.4,
     });
-    return fuse.search(searchValue).map((result) => result.item);
+    return fuse
+      .search(searchValue)
+      .map((result) => result.item)
+      .sort((a, b) => statusOrder[getPollStatus(a.startTime, a.endTime)] - statusOrder[getPollStatus(b.startTime, b.endTime)]);
   }, [data, searchValue]);
 
   return (
@@ -51,20 +56,22 @@ export default function Home() {
             <p className=" text-muted-foreground ">Nothing matched your query, seriously.</p>
           </div>
         ) : (
-          filteredPolls.map((i: PollModel) => (
-            <PollCard
-              key={i.pollId}
-              pollId={i.pollId}
-              title={i.title}
-              startDate={dayjs(i.startTime).unix().toString()}
-              endDate={dayjs(i.endTime).unix().toString()}
-              description={i.description}
-              creator={i.creator}
-              voteCount={0}
-              totalPossibleVotes={0}
-              status={getPollStatus(i.startTime, i.endTime)}
-            />
-          ))
+          filteredPolls
+            .sort((a, b) => statusOrder[getPollStatus(a.startTime, a.endTime)] - statusOrder[getPollStatus(b.startTime, b.endTime)])
+            .map((i: PollModel) => (
+              <PollCard
+                key={i.pollId}
+                pollId={i.pollId}
+                title={i.title}
+                startDate={dayjs(i.startTime).unix().toString()}
+                endDate={dayjs(i.endTime).unix().toString()}
+                description={i.description}
+                creator={i.creator}
+                voteCount={0}
+                totalPossibleVotes={0}
+                status={getPollStatus(i.startTime, i.endTime)}
+              />
+            ))
         )}
       </div>
     </div>
