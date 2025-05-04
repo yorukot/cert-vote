@@ -54,6 +54,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
   const [showConfetti, setShowConfetti] = useState(false);
   const { width, height } = useWindowSize();
   const [voteHash, setVoteHash] = useState<string | null>(null);
+  const [randomUserId, setRandomUserId] = useState<string | null>(null);
 
   // Function to clear all sensitive voting data
   const clearVotingData = () => {
@@ -169,6 +170,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
             const publicKeyBuffer = await window.crypto.subtle.exportKey("raw", keyPair.publicKey);
             const publicKeyBase64 = btoa(String.fromCharCode(...new Uint8Array(publicKeyBuffer)));
             const randomId = uuidv4();
+            setRandomUserId(randomId);
             // You may want to get userId from the JWT or user context
             const userId = "anonymous";
             const voteKeyRes = await fetch(`/api/polls/${pollId}/vote-key`, {
@@ -224,24 +226,43 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
         <AlertDialogContent className="sm:max-w-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Vote casted successfully! 🎉</AlertDialogTitle>
-            <AlertDialogDescription>
-              <p className="mb-6">Your vote has been securely signed by your private key and stored on blockchain to ensure integrity</p>
+            <AlertDialogDescription asChild>
+              <>
+                <p className="mb-6">Your vote has been securely signed by your private key and stored on blockchain to ensure integrity</p>
 
-              <p className="mb-2">Block hash:</p>
-              {voteHash && <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold w-full overflow-x-scroll">{voteHash}</code>}
+                <p className="mb-1">Vote random ID:</p>
+                {randomUserId && <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] mb-1 font-mono text-sm font-semibold w-full overflow-x-scroll">{randomUserId}</code>}
+                <p className="mb-1">Block hash:</p>
+                {voteHash && <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold w-full overflow-x-scroll">{voteHash}</code>}
+
+                <p className="mt-3 text-sm text-muted-foreground">None of your personal data is bound to your vote, only the vote random ID is stored on blockchain.</p>
+              </>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel asChild>
-              <Button variant={voteHash ? "secondary" : "default"}>Close</Button>
+              <Button
+                variant={voteHash ? "secondary" : "default"}
+                className="cursor-pointer"
+                onClick={() => {
+                  setNationalId("");
+                  setGeneratingKey(false);
+                  setSubmitting(false);
+                }}
+              >
+                Close
+              </Button>
             </AlertDialogCancel>
             {voteHash && (
               <AlertDialogAction
                 onClick={() => {
                   navigator.clipboard.writeText(voteHash);
+                  setNationalId("");
+                  setGeneratingKey(false);
+                  setSubmitting(false);
                 }}
               >
-                Copy block and close
+                Copy block hash and close
               </AlertDialogAction>
             )}
           </AlertDialogFooter>
@@ -337,9 +358,9 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
                     <DialogContent>
                       {generatingKey || submitting ? (
                         <div className="flex flex-col items-center justify-center py-4">
-                          <span className="text-sm text-muted-foreground mb-2">Generating public/private key for encryption…</span>
+                          <span className="text-sm text-muted-foreground mb-2">Processing your vote</span>
                           <span className="text-xs text-destructive mb-4">Do not close or refresh this window during key generation.</span>
-                          <LoaderCircle className="animate-spin" />
+                          <LoaderCircle className="animate-spin" size={28} />
                           {keyGenError && <div className="text-destructive text-xs mt-2">{keyGenError}</div>}
                         </div>
                       ) : (
