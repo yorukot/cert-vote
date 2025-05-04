@@ -1,5 +1,6 @@
 import { createHash } from "crypto";
 import { Abortable, Collection, Db, DeleteResult, Filter, FindOptions, UpdateResult } from "mongodb";
+import VoteKey from "./vote-key";
 
 export interface VoteBlockModel {
   previousBlockHash: string;
@@ -10,6 +11,12 @@ export interface VoteBlockModel {
   selectedOption: "agree" | "disagree" | "abstain";
   userSignature: string;
   hash: string;
+}
+
+interface VoteResult {
+  agree: number;
+  disagree: number;
+  abstain: number;
 }
 
 export function createBlockHash(
@@ -44,7 +51,7 @@ export class VoteBlock implements VoteBlockModel {
     this.collection = this.database.collection<VoteBlockModel>(VoteBlock.collection_name);
   }
 
-  static async getLastBlock(database: Db) {
+  static async getLatestBlock(database: Db) {
     const cursor = await this.find(database, {}, { sort: { index: -1 }, limit: 1 });
 
     const lastBlock = cursor.at(0);
@@ -65,7 +72,7 @@ export class VoteBlock implements VoteBlockModel {
     selectedOption: "agree" | "disagree" | "abstain",
     userSignature: string,
   ): Promise<VoteBlock> {
-    let previousBlock = await VoteBlock.getLastBlock(database);
+    let previousBlock = await VoteBlock.getLatestBlock(database);
 
     if (!previousBlock) {
       const genesisBlock = new VoteBlock(database, "", 0, pollId, "", "", "abstain", "", createBlockHash("", pollId, 0, "", "", "abstain", ""));
@@ -110,6 +117,67 @@ export class VoteBlock implements VoteBlockModel {
       },
       { upsert: true },
     );
+  }
+
+  async verifyAndCountResult() {
+    const result: VoteResult = {
+      agree: 0,
+      disagree: 0,
+      abstain: 0,
+    };
+
+    // Get the vote keys for the poll
+    const voteKeys = await VoteKey.find(this.database, { pollId: this.pollId });
+    const voteKeyMap = new Map<string, VoteKey>(voteKeys.map((vk) => [vk.voteRandomId, vk] as [string, VoteKey]));
+
+    // Get the blocks for the poll
+    const blocks = await VoteBlock.find(this.database, { pollId: this.pollId }, { sort: { index: -1 } });
+    const blockMap = new Map<string, VoteBlock>(blocks.map((vb) => [vb.hash, vb] as [string, VoteBlock]));
+
+    let currentBlock = blocks[0];
+
+    // The genesis block has index 0, so it won't be processed, as the genesis block's select option is always "abstain"
+    while (currentBlock.index > 0) {
+      createBlockHash(
+        currentBlock.previousBlockHash,
+        currentBlock.pollId,
+        currentBlock.index,
+        currentBlock.userPublicKey,
+        currentBlock.voteRandomId,
+        currentBlock.selectedOption,
+        currentBlock.userSignature,
+      );
+
+      if (currentBlock.hash !== currentBlock.hash) {
+        throw new Error("Block hash does not match: " + currentBlock.hash);
+      }
+
+      const voteKey = voteKeyMap.get(currentBlock.voteRandomId);
+
+      if (!voteKey) {
+        throw new Error("Vote key not found for voteRandomId: " + currentBlock.voteRandomId + " in block " + currentBlock.hash);
+      }
+
+      // Count the result
+      if (currentBlock.selectedOption === "agree") {
+        result.agree++;
+      } else if (currentBlock.selectedOption === "disagree") {
+        result.disagree++;
+      } else if (currentBlock.selectedOption === "abstain") {
+        result.abstain++;
+      }
+
+      // Move to the previous block
+      const previousBlock = blockMap.get(currentBlock.previousBlockHash);
+
+      if (!previousBlock) {
+        throw new Error("Previous block " + currentBlock.previousBlockHash + " not found for block: " + currentBlock.hash);
+      }
+
+      currentBlock = previousBlock;
+    }
+
+    return result;
   }
 
   async remove(): Promise<DeleteResult> {
