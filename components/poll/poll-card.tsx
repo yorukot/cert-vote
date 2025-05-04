@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,8 @@ import Confetti from "react-confetti";
 import { useWindowSize } from "react-use";
 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import useSWR from "swr";
+import fetcher from "@/lib/fetcher";
 
 interface PollCardProps {
   pollId: string;
@@ -25,20 +27,19 @@ interface PollCardProps {
   description?: string;
   imageSrc?: string;
   creator?: string;
-  voteCount: number;
   totalPossibleVotes?: number;
   status: "ongoing" | "completed" | "upcoming";
   className?: string;
 }
 
-export function PollCard({ pollId, title, startDate, endDate, description, imageSrc, creator, voteCount, totalPossibleVotes = 100, status, className }: PollCardProps) {
+export function PollCard({ pollId, title, startDate, endDate, description, imageSrc, creator, totalPossibleVotes = 100, status, className }: PollCardProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedVote, setSelectedVote] = useState<string | null>(null);
   const [nationalId, setNationalId] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [voteError, setVoteError] = useState<string | null>(null);
   const [generatingKey, setGeneratingKey] = useState(false);
   const [keyGenError, setKeyGenError] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -46,6 +47,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
   const [voteHash, setVoteHash] = useState<string | null>(null);
   const [randomUserId, setRandomUserId] = useState<string | null>(null);
   const [voted, setVoted] = useState<boolean>(false);
+  const [voteCount, setVoteCount] = useState<number | null>(null);
   const [isFacialWindowOpened, setIsFacialWindowOpened] = useState(false);
 
   // Function to clear all sensitive voting data
@@ -62,6 +64,14 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
     setNationalId("");
     setSelectedVote(null);
   };
+
+  useEffect(() => {
+    fetch(`/api/polls/${pollId}/poll-count`)
+      .then((res) => res.json())
+      .then((data) => {
+        setVoteCount(data.agree + data.disagree + data.abstain || 0);
+      });
+  }, [voted, pollId]);
 
   // Function to submit the final vote using the generated key
   const submitVote = async (randomId: string, privateKey: CryptoKey, option: string) => {
@@ -101,7 +111,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
       setSuccess(true);
       setShowConfetti(true);
     } catch (err: any) {
-      setError(err.message || "Failed to submit vote");
+      setVoteError(err.message || "Failed to submit vote");
       setGeneratingKey(false);
     }
   };
@@ -136,10 +146,9 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
   const handleDialogSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    setError(null);
+    setVoteError(null);
     setSuccess(false);
     setKeyGenError(null);
-    setVoted(true);
 
     // Clear any previous voting data
     clearVotingData();
@@ -190,6 +199,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
 
             // Now submit the actual vote
             await submitVote(randomId, keyPair.privateKey, selectedVote!);
+            setVoted(true);
 
             setGeneratingKey(false);
             setDialogOpen(false);
@@ -202,7 +212,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
         })();
       }
     } catch (err: any) {
-      setError(err.message || "Unknown error");
+      setVoteError(err.message || "Unknown error");
       setSubmitting(false);
     }
   };
@@ -319,7 +329,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
                   <div className="flex flex-row justify-between items-center">
                     {/* Vote count */}
                     <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold text-primary">{voteCount}</span>
+                      <span className="text-3xl font-bold text-primary">{voteCount != null ? voteCount : "..."}</span>
                       <span className="text-xs text-muted-foreground">people voted</span>
                     </div>
                     {/* Voting buttons as dropdown */}
@@ -367,7 +377,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
                           </DialogHeader>
                           <Input placeholder="National ID" value={nationalId} onChange={(e) => setNationalId(e.target.value)} required autoFocus disabled={submitting} />
                           <Input placeholder="National ID card number" />
-                          {error && <div className="text-destructive text-xs">{error}</div>}
+                          {voteError && <div className="text-destructive text-xs">{voteError}</div>}
                           {success && <div className="text-green-600 text-xs">Vote token saved!</div>}
                           <DialogFooter>
                             <Button

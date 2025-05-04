@@ -51,8 +51,8 @@ export class VoteBlock implements VoteBlockModel {
     this.collection = this.database.collection<VoteBlockModel>(VoteBlock.collection_name);
   }
 
-  static async getLatestBlock(database: Db) {
-    const cursor = await this.find(database, {}, { sort: { index: -1 }, limit: 1 });
+  static async getLatestBlock(database: Db, pollId: string) {
+    const cursor = await this.find(database, { pollId: pollId }, { sort: { index: -1 }, limit: 1 });
 
     const lastBlock = cursor.at(0);
 
@@ -72,7 +72,7 @@ export class VoteBlock implements VoteBlockModel {
     selectedOption: "agree" | "disagree" | "abstain",
     userSignature: string,
   ): Promise<VoteBlock> {
-    let previousBlock = await VoteBlock.getLatestBlock(database);
+    let previousBlock = await VoteBlock.getLatestBlock(database, pollId);
 
     if (!previousBlock) {
       const genesisBlock = new VoteBlock(database, "", 0, pollId, "", "", "abstain", "", createBlockHash("", pollId, 0, "", "", "abstain", ""));
@@ -92,16 +92,12 @@ export class VoteBlock implements VoteBlockModel {
     const collection = database.collection<VoteBlockModel>(VoteBlock.collection_name);
     const cursor = collection.find(filter, options);
 
-    await collection.createIndex({ index: 1 }, { background: true });
-
     const docs = await cursor.toArray();
     return docs.map((doc) => VoteBlock.fromJson(database, doc));
   }
 
   static async findOne(database: Db, filter: Filter<VoteBlockModel>, options?: FindOptions & Abortable): Promise<VoteBlock | null> {
     const collection = database.collection<VoteBlockModel>(VoteBlock.collection_name);
-
-    await collection.createIndex({ index: 1 }, { background: true });
 
     const doc = await collection.findOne(filter, options);
     if (!doc) return null;
@@ -138,7 +134,7 @@ export class VoteBlock implements VoteBlockModel {
 
     // The genesis block has index 0, so it won't be processed, as the genesis block's select option is always "abstain"
     while (currentBlock.index > 0) {
-      createBlockHash(
+      const hash = createBlockHash(
         currentBlock.previousBlockHash,
         currentBlock.pollId,
         currentBlock.index,
@@ -148,7 +144,7 @@ export class VoteBlock implements VoteBlockModel {
         currentBlock.userSignature,
       );
 
-      if (currentBlock.hash !== currentBlock.hash) {
+      if (hash !== currentBlock.hash) {
         throw new Error("Block hash does not match: " + currentBlock.hash);
       }
 
@@ -168,6 +164,7 @@ export class VoteBlock implements VoteBlockModel {
       }
 
       // Move to the previous block
+      console.log(blockMap);
       const previousBlock = blockMap.get(currentBlock.previousBlockHash);
 
       if (!previousBlock) {

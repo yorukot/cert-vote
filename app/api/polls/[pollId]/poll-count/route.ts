@@ -12,7 +12,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return Response.json({ error: "Poll not found" }, { status: 404 });
   }
 
-  const latestBlock = await VoteBlock.getLatestBlock(database);
+  const latestBlock = await VoteBlock.getLatestBlock(database, pollId);
 
   if (!latestBlock) {
     // The genesis block for the poll has not been created yet.
@@ -23,9 +23,5 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     });
   }
 
-  try {
-    return Response.json(await latestBlock.verifyAndCountResult());
-  } catch (e: Error) {
-    return Response.json({ error: "Failed to verify and count results: " + e.cause }, { status: 500 });
-  }
+  return Response.json(await latestBlock.verifyAndCountResult());
 }

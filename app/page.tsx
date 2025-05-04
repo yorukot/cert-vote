@@ -67,7 +67,6 @@ export default function Home() {
                 endDate={dayjs(i.endTime).unix().toString()}
                 description={i.description}
                 creator={i.creator}
-                voteCount={0}
                 totalPossibleVotes={0}
                 status={getPollStatus(i.startTime, i.endTime)}
               />
