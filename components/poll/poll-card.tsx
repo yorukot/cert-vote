@@ -272,7 +272,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
       {showConfetti && <Confetti width={width} height={height} recycle={false} numberOfPieces={500} />}
 
       <div className="shadow-sm hover:shadow-md w-full">
-        <Card className="overflow-hidden w-full rounded-t-xl rounded-b-none border-t border-x border-b-0 shadow-none duration-200 relative">
+        <Card className="overflow-hidden w-full rounded-t-xl rounded-b-none border-t border-x border-b-0 shadow-none duration-200 relative gap-0">
           <CardHeader className="cursor-pointer flex flex-row justify-between items-center" onClick={() => setIsOpen(!isOpen)}>
             <div className="flex items-center gap-3">
               <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }} className="text-muted-foreground">
@@ -287,8 +287,8 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
 
           <AnimatePresence>
             {isOpen && (
-              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
-                <CardContent className="px-6 pt-0 space-y-4">
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.8, ease: "backInOut" }}>
+                <CardContent className="px-6 pt-0 mt-6 space-y-4">
                   {/* Dates */}
                   <div className="flex flex-col space-y-1">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
