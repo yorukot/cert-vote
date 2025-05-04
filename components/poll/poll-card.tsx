@@ -362,7 +362,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
                           <DialogHeader>
                             <DialogTitle>Enter National ID</DialogTitle>
                             <DialogDescription>
-                              To vote <span className="font-semibold">{selectedVote}</span>, please enter your national ID.
+                              To vote <span className="font-semibold">{selectedVote}</span> in <span className={"font-semibold"}>{title}</span>please enter your national ID.
                             </DialogDescription>
                           </DialogHeader>
                           <Input placeholder="National ID" value={nationalId} onChange={(e) => setNationalId(e.target.value)} required autoFocus disabled={submitting} />
@@ -379,6 +379,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
                                 setIsFacialWindowOpened(true);
                               }}
                             >
+                              {isFacialWindowOpened && <Check size={12} className="mr-2" />}
                               Scan your face
                             </Button>
                             <Button type="submit" disabled={submitting || !nationalId || !isFacialWindowOpened} variant={isFacialWindowOpened ? "default" : "outline"}>
