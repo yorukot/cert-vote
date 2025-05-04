@@ -287,7 +287,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
 
           <AnimatePresence>
             {isOpen && (
-              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25, ease: "easeInOut" }}>
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25, ease: [0.35, 1, 0.8, 0.85] }}>
                 <CardContent className="px-6 pt-0 mt-6 space-y-4">
                   {/* Dates */}
                   <div className="flex flex-col space-y-1">
