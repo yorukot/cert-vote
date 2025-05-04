@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { cn } from "@/lib/utils";
@@ -41,6 +41,22 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
   const [keyGenError, setKeyGenError] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const { width, height } = useWindowSize();
+  const [voteHash, setVoteHash] = useState<string | null>(null);
+
+  // Function to clear all sensitive voting data
+  const clearVotingData = () => {
+    // Clear all voting-related data from localStorage
+    localStorage.removeItem(`poll_jwt_${pollId}`);
+    localStorage.removeItem(`poll_random_id_${pollId}`);
+    localStorage.removeItem(`poll_private_key_${pollId}`);
+    
+    // Reset state
+    setShowConfetti(false);
+    setSuccess(false);
+    setVoteHash(null);
+    setNationalId("");
+    setSelectedVote(null);
+  };
 
   // Function to submit the final vote using the generated key
   const submitVote = async (randomId: string, privateKey: CryptoKey, option: string) => {
@@ -63,17 +79,24 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
           userSignature: signatureBase64,
         }),
       });
-
+      
+      // Get the response data
+      const voteData = await voteRes.json();
+      
       if (!voteRes.ok) {
-        const errData = await voteRes.json();
-        throw new Error(errData.error || "Failed to submit vote");
+        throw new Error(voteData.error || "Failed to submit vote");
+      }
+      
+      // Store the vote hash from the response
+      if (voteData.createdVoteBlock?.hash) {
+        setVoteHash(voteData.createdVoteBlock.hash);
       }
 
       // Update success state and show confetti
       setSuccess(true);
       setShowConfetti(true);
       // Hide confetti after 5 seconds
-      setTimeout(() => setShowConfetti(false), 5000);
+      setTimeout(() => clearVotingData(), 5000);
     } catch (err: any) {
       setError(err.message || "Failed to submit vote");
       setGeneratingKey(false);
@@ -113,6 +136,10 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
     setError(null);
     setSuccess(false);
     setKeyGenError(null);
+    
+    // Clear any previous voting data
+    clearVotingData();
+    
     try {
       const res = await fetch(`/api/polls/${pollId}/verification-token`, {
         method: "POST",
@@ -175,16 +202,48 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
     }
   };
 
+  useEffect(() => {
+    return () => {
+      clearVotingData();
+    };
+  }, []);
+
   return (
     <>
       {showConfetti && (
         <>
           <Confetti width={width} height={height} recycle={false} numberOfPieces={500} />
           <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
-            <div className="bg-white/80 p-6 rounded-lg shadow-lg text-center max-w-md backdrop-blur-sm">
+            <div className="bg-white/80 p-6 rounded-lg shadow-lg text-center max-w-md backdrop-blur-sm pointer-events-auto">
               <div className="text-3xl mb-2">🎉</div>
               <h2 className="text-2xl font-bold text-green-600 mb-2">Vote Successfully Cast!</h2>
-              <p className="text-gray-700">Your vote has been securely recorded on the blockchain.</p>
+              <p className="text-gray-700 mb-4">Your vote has been securely recorded on the blockchain.</p>
+              
+              {voteHash && (
+                <div className="mt-4">
+                  <p className="text-sm text-gray-500 mb-1">Verification Hash:</p>
+                  <div className="flex items-center gap-2 bg-gray-100 p-2 rounded overflow-x-auto">
+                    <code className="text-xs font-mono text-gray-700 whitespace-nowrap overflow-x-auto">{voteHash}</code>
+                    <button 
+                      className="min-w-[60px] text-xs bg-primary text-white px-2 py-1 rounded hover:bg-primary/80 transition-colors"
+                      onClick={() => {
+                        navigator.clipboard.writeText(voteHash);
+                        alert("Hash copied to clipboard!");
+                      }}
+                    >
+                      Copy
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">You can use this hash to verify your vote on the blockchain.</p>
+                </div>
+              )}
+              
+              <button
+                className="mt-4 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition-colors"
+                onClick={() => clearVotingData()}
+              >
+                Close
+              </button>
             </div>
           </div>
         </>
