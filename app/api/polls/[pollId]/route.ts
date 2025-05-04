@@ -11,7 +11,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return Response.json({ error: "Poll not found" }, { status: 404 });
   }
 
-  return Response.json(poll.toJson());
+  // Remove sensitive information
+  const { allowedNationalIds, ...pollData } = poll.toJson();
+
+  return Response.json(pollData);
 }
 
 // Update a poll
@@ -32,7 +35,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (body.title) existingPoll.title = body.title;
     if (body.description) existingPoll.description = body.description;
     if (body.creator) existingPoll.creator = body.creator;
-    
+
     if (body.startTime) {
       const startTime = new Date(body.startTime);
       if (isNaN(startTime.getTime())) {
@@ -40,7 +43,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }
       existingPoll.startTime = startTime;
     }
-    
+
     if (body.endTime) {
       const endTime = new Date(body.endTime);
       if (isNaN(endTime.getTime())) {
@@ -48,7 +51,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }
       existingPoll.endTime = endTime;
     }
-    
+
     if (body.allowedNationalIds) {
       if (!Array.isArray(body.allowedNationalIds)) {
         return Response.json({ error: "allowedNationalIds must be an array" }, { status: 400 });
