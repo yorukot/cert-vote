@@ -15,17 +15,7 @@ import { v4 as uuidv4 } from "uuid";
 import Confetti from "react-confetti";
 import { useWindowSize } from "react-use";
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface PollCardProps {
   pollId: string;
@@ -55,6 +45,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
   const { width, height } = useWindowSize();
   const [voteHash, setVoteHash] = useState<string | null>(null);
   const [randomUserId, setRandomUserId] = useState<string | null>(null);
+  const [voted, setVoted] = useState<boolean>(false);
 
   // Function to clear all sensitive voting data
   const clearVotingData = () => {
@@ -147,6 +138,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
     setError(null);
     setSuccess(false);
     setKeyGenError(null);
+    setVoted(true);
 
     // Clear any previous voting data
     clearVotingData();
@@ -164,7 +156,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
         setSuccess(true);
         setGeneratingKey(true);
         // Generate key pair and UUID, send to backend
-        (async () => {
+        await (async () => {
           try {
             const keyPair = await window.crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"]);
             const publicKeyBuffer = await window.crypto.subtle.exportKey("raw", keyPair.publicKey);
@@ -242,6 +234,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
           <AlertDialogFooter>
             <AlertDialogCancel asChild>
               <Button
+                disabled={voted}
                 variant={voteHash ? "secondary" : "default"}
                 className="cursor-pointer"
                 onClick={() => {
@@ -358,12 +351,12 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
                   <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                     <DialogContent>
                       {generatingKey || submitting ? (
-                        <div className="flex flex-col items-center justify-center py-4">
+                        <>
                           <span className="text-sm text-muted-foreground mb-2">Processing your vote</span>
                           <span className="text-xs text-destructive mb-4">Do not close or refresh this window during key generation.</span>
                           <LoaderCircle className="animate-spin" size={28} />
                           {keyGenError && <div className="text-destructive text-xs mt-2">{keyGenError}</div>}
-                        </div>
+                        </>
                       ) : (
                         <form onSubmit={handleDialogSubmit} className="space-y-4">
                           <DialogHeader>
