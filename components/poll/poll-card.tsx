@@ -11,9 +11,22 @@ import { Button } from "../ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../ui/dropdown-menu";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "../ui/dialog";
 import { Input } from "../ui/input";
+import { LoaderCircle, ClipboardCopy } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import Confetti from "react-confetti";
 import { useWindowSize } from "react-use";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface PollCardProps {
   pollId: string;
@@ -49,7 +62,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
     localStorage.removeItem(`poll_jwt_${pollId}`);
     localStorage.removeItem(`poll_random_id_${pollId}`);
     localStorage.removeItem(`poll_private_key_${pollId}`);
-    
+
     // Reset state
     setShowConfetti(false);
     setSuccess(false);
@@ -79,14 +92,14 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
           userSignature: signatureBase64,
         }),
       });
-      
+
       // Get the response data
       const voteData = await voteRes.json();
-      
+
       if (!voteRes.ok) {
         throw new Error(voteData.error || "Failed to submit vote");
       }
-      
+
       // Store the vote hash from the response
       if (voteData.createdVoteBlock?.hash) {
         setVoteHash(voteData.createdVoteBlock.hash);
@@ -95,8 +108,6 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
       // Update success state and show confetti
       setSuccess(true);
       setShowConfetti(true);
-      // Hide confetti after 5 seconds
-      setTimeout(() => clearVotingData(), 5000);
     } catch (err: any) {
       setError(err.message || "Failed to submit vote");
       setGeneratingKey(false);
@@ -136,10 +147,10 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
     setError(null);
     setSuccess(false);
     setKeyGenError(null);
-    
+
     // Clear any previous voting data
     clearVotingData();
-    
+
     try {
       const res = await fetch(`/api/polls/${pollId}/verification-token`, {
         method: "POST",
@@ -210,44 +221,35 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
 
   return (
     <>
-      {showConfetti && (
-        <>
-          <Confetti width={width} height={height} recycle={false} numberOfPieces={500} />
-          <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
-            <div className="bg-white/80 p-6 rounded-lg shadow-lg text-center max-w-md backdrop-blur-sm pointer-events-auto">
-              <div className="text-3xl mb-2">🎉</div>
-              <h2 className="text-2xl font-bold text-green-600 mb-2">Vote Successfully Cast!</h2>
-              <p className="text-gray-700 mb-4">Your vote has been securely recorded on the blockchain.</p>
-              
-              {voteHash && (
-                <div className="mt-4">
-                  <p className="text-sm text-gray-500 mb-1">Verification Hash:</p>
-                  <div className="flex items-center gap-2 bg-gray-100 p-2 rounded overflow-x-auto">
-                    <code className="text-xs font-mono text-gray-700 whitespace-nowrap overflow-x-auto">{voteHash}</code>
-                    <button 
-                      className="min-w-[60px] text-xs bg-primary text-white px-2 py-1 rounded hover:bg-primary/80 transition-colors"
-                      onClick={() => {
-                        navigator.clipboard.writeText(voteHash);
-                        alert("Hash copied to clipboard!");
-                      }}
-                    >
-                      Copy
-                    </button>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">You can use this hash to verify your vote on the blockchain.</p>
-                </div>
-              )}
-              
-              <button
-                className="mt-4 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition-colors"
-                onClick={() => clearVotingData()}
+      <AlertDialog open={showConfetti} onOpenChange={setShowConfetti}>
+        <AlertDialogContent className="sm:max-w-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Vote casted successfully! 🎉</AlertDialogTitle>
+            <AlertDialogDescription>
+              <p className="mb-6">Your vote has been securely signed by your private key and stored on blockchain to ensure integrity</p>
+
+              <p className="mb-2">Block hash:</p>
+              {voteHash && <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold w-full overflow-x-scroll">{voteHash}</code>}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button variant={voteHash ? "secondary" : "default"}>Close</Button>
+            </AlertDialogCancel>
+            {voteHash && (
+              <AlertDialogAction
+                onClick={() => {
+                  navigator.clipboard.writeText(voteHash);
+                }}
               >
-                Close
-              </button>
-            </div>
-          </div>
-        </>
-      )}
+                Copy and close
+              </AlertDialogAction>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      {showConfetti && <Confetti width={width} height={height} recycle={false} numberOfPieces={500} />}
+
       <div className="shadow-sm hover:shadow-md w-full">
         <Card className="overflow-hidden w-full rounded-t-xl rounded-b-none border-t border-x border-b-0 shadow-none duration-200 relative">
           <CardHeader className="cursor-pointer flex flex-row justify-between items-center" onClick={() => setIsOpen(!isOpen)}>
@@ -338,10 +340,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
                         <div className="flex flex-col items-center justify-center py-4">
                           <span className="text-sm text-muted-foreground mb-2">Generating public/private key for encryption…</span>
                           <span className="text-xs text-destructive mb-4">Do not close or refresh this window during key generation.</span>
-                          <svg className="animate-spin h-6 w-6 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                          </svg>
+                          <LoaderCircle className="animate-spin" />
                           {keyGenError && <div className="text-destructive text-xs mt-2">{keyGenError}</div>}
                         </div>
                       ) : (
