@@ -44,8 +44,8 @@ export default function Home() {
     <div className="w-full h-full flex flex-col items-center justify-center space-y-8">
       <div className="grid place-items-center">
         <Vote width={100} height={100} className="mb-4" />
-        <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-indigo-300 to-fuchsia-500 mb-2">CertVote</h1>
-        <h2 className="text-lg text-muted-foreground mb-6 text-center">Anonymous voting system with blockchain based verification system</h2>
+        <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-indigo-300 to-fuchsia-500 mb-2">區塊鏈投票</h1>
+        <h2 className="text-lg text-muted-foreground mb-6 text-center">基於區塊鏈驗證系統的匿名投票系統</h2>
       </div>
       <PollSearch setValue={setSearchValue} value={searchValue} />
       <div className="flex flex-col gap-6 w-full max-w-3xl justify-center items-center">
@@ -53,7 +53,7 @@ export default function Home() {
           <Skeleton className="w-full h-24" />
         ) : filteredPolls.length === 0 ? (
           <div className="w-full h-24 border-dashed grid place-items-center border-muted rounded-xl border-2">
-            <p className=" text-muted-foreground ">Nothing matched your query, seriously.</p>
+            <p className=" text-muted-foreground ">沒有符合您查詢的結果。</p>
           </div>
         ) : (
           filteredPolls

@@ -16,8 +16,8 @@ const robotoMono = Roboto_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CertVote",
-  description: "Anomyous voting system with blockchain based verification system",
+  title: "區塊鏈投票",
+  description: "基於區塊鏈驗證系統的匿名投票系統",
 };
 
 export default function RootLayout({
@@ -39,7 +39,7 @@ export default function RootLayout({
               <div className="mx-auto flex justify-between py-4 max-w-7xl px-8">
                 <div className="flex gap-4 place-items-center">
                   <Vote />
-                  <h1 className="font-bold text-xl">CertVote</h1>
+                  <h1 className="font-bold text-xl">區塊鏈投票</h1>
                 </div>
                 <div>
                   <ModeToggle />

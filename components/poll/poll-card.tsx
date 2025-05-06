@@ -228,17 +228,17 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
       <AlertDialog open={showConfetti} onOpenChange={setShowConfetti}>
         <AlertDialogContent className="sm:max-w-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Vote casted successfully! 🎉</AlertDialogTitle>
+            <AlertDialogTitle>投票成功！🎉</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <>
-                <p className="mb-6">Your vote has been securely signed by your private key and stored on blockchain to ensure integrity</p>
+                <p className="mb-6">您的投票已由您的私鑰安全簽署並存儲在區塊鏈上以確保完整性</p>
 
-                <p className="mb-1">Vote random ID:</p>
+                <p className="mb-1">投票隨機 ID：</p>
                 {randomUserId && <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] mb-1 font-mono text-sm font-semibold w-full overflow-x-scroll">{randomUserId}</code>}
-                <p className="mb-1">Block hash:</p>
+                <p className="mb-1">區塊哈希：</p>
                 {voteHash && <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold w-full overflow-x-scroll">{voteHash}</code>}
 
-                <p className="mt-3 text-sm text-muted-foreground">None of your personal data is bound to your vote, only the vote random ID is stored on blockchain.</p>
+                <p className="mt-3 text-sm text-muted-foreground">您的個人數據不會與您的投票綁定，只有投票隨機 ID 存儲在區塊鏈上。</p>
               </>
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -254,7 +254,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
                   setRandomUserId(null);
                 }}
               >
-                Close
+                關閉
               </Button>
             </AlertDialogCancel>
             {voteHash && (
@@ -266,7 +266,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
                   setSubmitting(false);
                 }}
               >
-                Copy block hash and close
+                複製區塊哈希並關閉
               </AlertDialogAction>
             )}
           </AlertDialogFooter>
@@ -296,11 +296,11 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
                   <div className="flex flex-col space-y-1">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Calendar size={12} />
-                      <span>Start: {formatDate(startDate)}</span>
+                      <span>開始：{formatDate(startDate)}</span>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Calendar size={12} />
-                      <span>End: {formatDate(endDate)}</span>
+                      <span>結束：{formatDate(endDate)}</span>
                     </div>
                   </div>
 
@@ -308,7 +308,7 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
                   {creator && (
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <User size={12} />
-                      <span>Created by: {creator}</span>
+                      <span>創建者：{creator}</span>
                     </div>
                   )}
 
@@ -330,28 +330,28 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
                     {/* Vote count */}
                     <div className="flex items-baseline gap-2">
                       <span className="text-3xl font-bold text-primary">{voteCount != null ? voteCount : "..."}</span>
-                      <span className="text-xs text-muted-foreground">people voted</span>
+                      <span className="text-xs text-muted-foreground">人已投票</span>
                     </div>
                     {/* Voting buttons as dropdown */}
                     <div className="flex pt-2 justify-center">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="default" size="sm" className={cn(status === "ongoing" && "cursor-pointer")} disabled={status !== "ongoing" || voted}>
-                            <Vote size={16} /> {voted ? "Voted" : "Vote"}
+                            <Vote size={16} /> {voted ? "已投票" : "投票"}
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="center" className="flex flex-col gap-2">
                           <DropdownMenuItem onClick={() => handleVoteClick("agree")} className="cursor-pointer">
                             {" "}
-                            <Smile size={16} /> Agree{" "}
+                            <Smile size={16} /> 同意{" "}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleVoteClick("abstain")} className="cursor-pointer">
                             {" "}
-                            <Annoyed size={16} /> Abstain{" "}
+                            <Annoyed size={16} /> 棄權{" "}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleVoteClick("disagree")} className="cursor-pointer">
                             {" "}
-                            <Frown size={16} /> Disagree{" "}
+                            <Frown size={16} /> 反對{" "}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -362,23 +362,23 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
                     <DialogContent>
                       {generatingKey || submitting ? (
                         <>
-                          <span className="text-sm text-muted-foreground mb-2">Processing your vote</span>
-                          <span className="text-xs text-destructive mb-4">Do not close or refresh this window during key generation.</span>
+                          <span className="text-sm text-muted-foreground mb-2">正在處理您的投票</span>
+                          <span className="text-xs text-destructive mb-4">金鑰生成過程中請勿關閉或刷新此窗口。</span>
                           <LoaderCircle className="animate-spin" size={28} />
                           {keyGenError && <div className="text-destructive text-xs mt-2">{keyGenError}</div>}
                         </>
                       ) : (
                         <form onSubmit={handleDialogSubmit} className="space-y-4">
                           <DialogHeader>
-                            <DialogTitle>Enter National ID</DialogTitle>
+                            <DialogTitle>輸入身份證號碼</DialogTitle>
                             <DialogDescription>
-                              To vote <span className="font-semibold">{selectedVote}</span> in <span className={"font-semibold"}>{title}</span>please enter your national ID.
+                              要在 <span className={"font-semibold"}>{title}</span> 中投 <span className="font-semibold">{selectedVote}</span>，請輸入您的身份證號碼。
                             </DialogDescription>
                           </DialogHeader>
-                          <Input placeholder="National ID" value={nationalId} onChange={(e) => setNationalId(e.target.value)} required autoFocus disabled={submitting} />
-                          <Input placeholder="National ID card number" />
+                          <Input placeholder="身份證號碼" value={nationalId} onChange={(e) => setNationalId(e.target.value)} required autoFocus disabled={submitting} />
+                          <Input placeholder="身份證卡號" />
                           {voteError && <div className="text-destructive text-xs">{voteError}</div>}
-                          {success && <div className="text-green-600 text-xs">Vote token saved!</div>}
+                          {success && <div className="text-green-600 text-xs">投票令牌已保存！</div>}
                           <DialogFooter>
                             <Button
                               disabled={isFacialWindowOpened}
@@ -390,10 +390,10 @@ export function PollCard({ pollId, title, startDate, endDate, description, image
                               }}
                             >
                               {isFacialWindowOpened && <Check size={12} className="mr-2" />}
-                              Scan your face
+                              掃描您的臉部
                             </Button>
                             <Button type="submit" disabled={submitting || !nationalId || !isFacialWindowOpened} variant={isFacialWindowOpened ? "default" : "outline"}>
-                              {submitting ? "Submitting..." : "Submit Vote"}
+                              {submitting ? "提交中..." : "提交投票"}
                             </Button>
                           </DialogFooter>
                         </form>
